@@ -1,0 +1,139 @@
+stages:
+  - clone-repo
+  - tf-validate
+  - tf-plan
+  - tf-apply
+  - tf-destroy
+  - ansible
+
+
+clone-repo:
+  stage: clone-repo
+  before_script:
+  - ''
+  script:
+    - git clone -b develop 
+https://danylo.teran:${MODULE_REPO_TOKEN}@gitlab.dx1.lseg.com/250469/dss/dss-terraform-module.git
+  artifacts:
+    paths:
+      - ./dss-terraform-module
+  needs: 
+    - vault-azure-auth
+  dependencies: 
+    - vault-azure-auth
+  tags:
+  - Refinitiv
+
+image:
+  name: hashicorp/terraform:latest
+  entrypoint:
+    - /usr/bin/env
+    - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+before_script:
+  - terraform -chdir=AMQ --version
+  - terraform -chdir=AMQ init
+
+terraform-validate:
+  stage: tf-validate
+  script:
+    - terraform -chdir=AMQ validate
+  needs: 
+    - vault-azure-auth
+    - clone-repo
+  dependencies: 
+    - vault-azure-auth
+    - clone-repo
+  tags:
+  - Refinitiv
+
+terraform-plan:
+  stage: tf-plan
+  script:
+    - terraform -chdir=AMQ plan -out "planfile"
+  artifacts:
+    paths:
+      - ./AMQ/planfile
+  needs: 
+    - vault-azure-auth
+    - terraform-validate
+    - clone-repo
+  dependencies: 
+    - vault-azure-auth
+    - terraform-validate
+    - clone-repo
+  tags:
+  - Refinitiv
+
+terraform-apply:
+  stage: tf-apply
+  script:
+    - terraform -chdir=AMQ apply -input=false "planfile"
+  when: manual
+  artifacts:
+    paths: 
+      - ./
+  needs: 
+    - vault-azure-auth
+    - clone-repo
+    - terraform-plan
+  dependencies: 
+    - vault-azure-auth
+    - clone-repo
+    - terraform-plan
+  tags:
+  - Refinitiv
+
+terraform-destroy:
+  stage: tf-destroy
+  script:
+    - terraform -chdir=AMQ destroy --auto-approve
+  when: manual
+  needs: 
+    - vault-azure-auth
+    - terraform-apply
+    - clone-repo
+  dependencies: 
+    - vault-azure-auth
+    - terraform-apply
+    - clone-repo
+  tags:
+    - Refinitiv
+
+fetch repository:
+  stage: ansible
+  before_script:
+  - ''
+  image:
+    name: alpine/git
+  dependencies:
+    - terraform-apply
+  script:
+   - git clone -b develop 
+https://${ANSIBLE_REPO_USER}:${ANSIBLE_REPO_TOKEN}@gitlab.dx1.lseg.com/250469/dss/dss-ansible-playbook.git
+  needs: 
+    - terraform-apply
+  artifacts:
+    paths:
+      - ./
+  tags:
+  - Refinitiv
+
+
+install and run ansible:
+  stage: ansible
+  before_script:
+  - ''
+  dependencies:
+    - fetch repository
+    - terraform-apply
+  needs:
+    - fetch repository
+    - terraform-apply
+  script:
+    - cat AMQ/hosts.cfg
+    - ansible --version
+    - ansible-playbook -i AMQ/hosts.cfg dss-ansible-playbook/active-mq.yml --key-file "AMQ/ansiblekey.pem"
+  tags:
+    - ansible-controller-centos-dt
+

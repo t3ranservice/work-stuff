@@ -1,0 +1,133 @@
+data "azurerm_client_config" "current" {}
+
+module "vnet" {
+  source                                = "../../dss-terraform-module//vnet"
+  vnet_name                             = var.vnet_name
+  resource_group_name                   = var.resource_group_name_platform
+}
+
+module "subnet" {
+  source                               = "../../dss-terraform-module//subnet"
+  vnet_name                            = var.vnet_name
+  subnet_name                          = var.subnet_name
+  resource_group_name                  = var.resource_group_name_platform
+}
+
+# PUBS machine scale-set
+
+module "pubs-scale-set" {
+  source                               = "../../dss-terraform-module/windows-vm-scale-set"
+  windows_vmss_name                    = 
+"${var.pubs_vmss_name}-${var.location}-${var.cloud_provider}-${var.number}-${var.env}-${var.project_name}"
+  resource_group_name                  = var.resource_group_name_app
+  windows_vmss_computer_name_prefix    = var.pubs_vmss_computer_name_prefix
+  location                             = var.location
+  windows_vmss_sku                     = var.pubs_vmss_sku
+  windows_vmss_instance_count          = var.pubs_vmss_instance_count
+  windows_vmss_password                = var.pubs_vmss_password
+  windows_vmss_user                    = var.pubs_vmss_user
+  windows_source_image_id              = var.windows_source_image_id
+  windows_upgrade_mode                 = var.pubs_vmss_upgrade_mode
+  windows_vmss_os_disk_storage_type    = var.pubs_vmss_os_disk_storage_type
+  windows_vmss_os_disk_caching         = var.pubs_vmss_os_disk_caching
+  windows_vmss_data_disk_caching       = var.pubs_vmss_data_disk_caching
+  windows_vmss_data_disk_create_option = var.pubs_vmss_data_disk_create_option
+  windows_vmss_data_disk_size          = var.pubs_vmss_data_disk_size
+  windows_vmss_data_disk_lun           = var.pubs_vmss_data_disk_lun
+  windows_vmss_data_disk_storage_type  = var.pubs_vmss_data_disk_storage_type
+  windows_vmss_nic_name                = var.pubs_vmss_nic_name
+  windows_vmss_nic_primary             = var.pubs_vmss_nic_primary
+  windows_vmss_ip_conf_name            = var.pubs_vmss_ip_conf_name
+  windows_vmss_ip_conf_primary         = var.pubs_vmss_ip_conf_primary
+  subnet_id                            = module.subnet.subnet_id
+  winrm_listener_protocol              = var.winrm_listener_protocol
+  zone_balance                         = var.zone_balance_true
+  zones                                = var.zones
+}
+
+# Data block to retrieve VMs IPs
+
+data "azurerm_virtual_machine_scale_set" "pubs-vmss" {
+  name                                = module.pubs-scale-set.windows_vmss_name
+  resource_group_name                 = var.resource_group_name_app
+  depends_on                          = [module.pubs-scale-set]
+}
+
+# Populate template with IPs for Ansible
+
+resource "local_file" "hosts-pubs-cfg" {
+  content                             = templatefile("./inventory-pubs.yml",
+    {
+      pubs-vms                        = data.azurerm_virtual_machine_scale_set.pubs-vmss.instances.*.private_ip_address
+    }
+  )
+  depends_on                          = [data.azurerm_virtual_machine_scale_set.pubs-vmss]
+  filename                            = "hosts-pubs.cfg"
+}
+
+# Create SSH keys for Ansible
+
+resource "tls_private_key" "ssh" {
+  algorithm                           = "RSA"
+  rsa_bits                            = "4096"
+}
+
+resource "local_file" "private_key" {
+  content                             = tls_private_key.ssh.private_key_pem
+  filename                            = "ansiblekey.pem"
+  file_permission                     = "0600"
+}
+
+
+module "backend-scale-set" {
+  source                             = "../../dss-terraform-module/linux-vm-scale-set"
+  linux_vmss_name                    = 
+"${var.backend_vmss_name}-${var.location}-${var.cloud_provider}-${var.number}-${var.env}-${var.project_name}"
+  resource_group_name                = var.resource_group_name_app
+  linux_vmss_computer_name_prefix    = var.backend_vmss_computer_name_prefix
+  location                           = var.location
+  linux_vmss_sku                     = var.backend_vmss_sku
+  linux_vmss_instance_count          = var.backend_vmss_instance_count
+  linux_vmss_password                = var.backend_vmss_password
+  linux_vmss_user                    = var.backend_vmss_user
+  linux_source_image_id              = var.linux_source_image_id
+  linux_vmss_upgrade_mode            = var.backend_vmss_upgrade_mode
+  linux_vmss_os_disk_storage_type    = var.backend_vmss_os_disk_storage_type
+  linux_vmss_os_disk_caching         = var.backend_vmss_os_disk_caching
+  linux_vmss_data_disk_caching       = var.backend_vmss_data_disk_caching
+  linux_vmss_data_disk_create_option = var.backend_vmss_data_disk_create_option
+  linux_vmss_data_disk_size          = var.backend_vmss_data_disk_size
+  linux_vmss_data_disk_lun           = var.backend_vmss_data_disk_lun
+  linux_vmss_data_disk_storage_type  = var.backend_vmss_data_disk_storage_type
+  linux_vmss_nic_name                = var.backend_vmss_nic_name
+  linux_vmss_nic_primary             = var.backend_vmss_nic_primary
+  linux_vmss_ip_conf_name            = var.backend_vmss_ip_conf_name
+  linux_vmss_ip_conf_primary         = var.backend_vmss_ip_conf_primary
+  subnet_id                          = module.subnet.subnet_id
+  public_key                         = tls_private_key.ssh.public_key_openssh
+  custom_data_file                   = var.custom_data_file
+  zone_balance                       = var.zone_balance_true
+  zones                              = var.zones
+}
+
+# Data block to retrieve VMs IPs
+
+data "azurerm_virtual_machine_scale_set" "backend-vmss" {
+  name                              = module.backend-scale-set.linux_vmss_name
+  resource_group_name               = var.resource_group_name_app
+  depends_on                        = [module.backend-scale-set]
+}
+
+# Populate template with IPs for Ansible
+
+resource "local_file" "hosts-backend-cfg" {
+  content                           = templatefile("./inventory-backend.yml",
+    {
+      backend-vms                   = 
+data.azurerm_virtual_machine_scale_set.backend-vmss.instances.*.private_ip_address
+    }
+  )
+  depends_on                        = [data.azurerm_virtual_machine_scale_set.backend-vmss]
+  filename                          = "hosts-backend.cfg"
+}
+

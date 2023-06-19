@@ -1,0 +1,38 @@
+include:
+  - local: ELK/deploy.yml
+    rules:
+      - if: $DIR_NAME == "ELK"
+  - local: AMQ/deploy.yml
+    rules:
+      - if: $DIR_NAME == "AMQ"
+  - project: 'ci/stable/security/vault/vault-integrator'
+    ref: '2.0.3' # Make sure to use latest tag
+    file:
+      - 'templates/vault-integrator.yml'
+
+variables:
+  DIR_NAME:
+    value: "AMQ"
+    options:
+      - "AMQ"
+      - "ELK"
+    description: "Directory name"
+  AZURE_ACCOUNT: "azure-2-dev-test-dss"
+  AZURE_RESOURCE_NAME: "creds/deployment"
+
+stages:
+  - azure-auth
+  - clone-repo
+  - download-secure-file
+  - tf-validate
+  - tf-plan
+  - tf-apply
+  - tf-destroy
+  - ansible
+
+vault-azure-auth:
+  stage: azure-auth
+  extends: .vault-azure-auth
+  tags:
+    - Refinitiv
+

@@ -1,0 +1,65 @@
+include:  
+  - local: Utils/ELK/pipeline-ansible-opensearch.yml
+    rules:
+      - if: $IMAGE == "elk"
+  - project: 'ci/stable/security/vault/vault-integrator'
+    ref: '2.0.3' # Make sure to use latest tag
+    file:
+      - 'templates/vault-integrator.yml'
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
+
+variables:
+  IMAGE:
+    value: "amq"
+    options:
+      - "amq"
+      - "dss_be"
+      - "dss_fe"
+      - "elk"
+      - "run_lin"
+      - "run_win"
+    description: "Image that will be created"
+  IMAGE_VERSION:
+    value: "0.0.1"
+    description: "Version of the deployed image"
+  AZURE_ACCOUNT: "azure-2-dev-test-dss"
+  AZURE_RESOURCE_NAME: "creds/deployment"
+
+stages:
+  - azure-auth
+  - ansible-manager
+  - ansible-data
+  - opensearch-all
+  - Packer
+
+vault-azure-auth:
+  stage: azure-auth
+  extends: .vault-azure-auth
+  tags:
+  - ansible-runner01
+
+run-packer:
+  stage: Packer
+  needs:
+    - vault-azure-auth
+  tags:
+    - ansible-runner01
+  image: hashicorp/packer:latest
+  script:
+    - if [ "$IMAGE" = "run_win" ] || [ "$IMAGE" = "dss_fe" ]; then export OPERATING_SYSTEM="windows"; else export 
+OPERATING_SYSTEM="linux"; fi
+    - export PACKER_LOG=1
+    - export PACKER_LOG_PATH=./packer.log
+    - packer version
+    - packer validate -only=$IMAGE.azure-arm.$OPERATING_SYSTEM Packer 
+    - packer inspect -only=$IMAGE.azure-arm.$OPERATING_SYSTEM Packer
+    - packer build -only=$IMAGE.azure-arm.$OPERATING_SYSTEM Packer
+  artifacts:
+    paths:
+      - ./packer.log
+
