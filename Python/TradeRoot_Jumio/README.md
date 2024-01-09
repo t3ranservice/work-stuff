@@ -1,0 +1,1 @@
+Script exports default metrics to Azure Monitor and then alerts are triggered based on them. Metrics are represented with the help of usual logs and their key:value pairs.
