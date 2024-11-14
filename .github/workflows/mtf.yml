@@ -56,9 +56,8 @@ jobs:
             });
             const pullRequests = JSON.stringify(response.data);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${pullRequests}\n`);
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pull2=${response}\n`);
+            console.log(response)
 
       - name: Use Pull Requests Data
         run: |
           echo "Pull requests: ${{ steps.fetch-prs.outputs.pulls }}"
-          echo "Pull requests2: ${{ steps.fetch-prs.outputs.pulls2 }}"
