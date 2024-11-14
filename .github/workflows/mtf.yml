@@ -67,7 +67,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequestData = ${{ steps.fetch-prs.outputs.pulls }}
+            const pullRequestData = JSON.stringify(${{ steps.fetch-prs.outputs.pulls }})
             console.log(pullRequestData)
             console.log(pullRequestData[0].title)
 
