@@ -54,8 +54,11 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            console.log("Pull Requests:", response.data);
+            const pullRequests = JSON.stringify(response.data);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${pullRequests}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pull2=${response}\n`);
 
       - name: Use Pull Requests Data
         run: |
           echo "Pull requests: ${{ steps.fetch-prs.outputs.pulls }}"
+          echo "Pull requests2: ${{ steps.fetch-prs.outputs.pulls2 }}"
