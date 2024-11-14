@@ -56,7 +56,7 @@ jobs:
             });
             const pullRequests = JSON.stringify(response.data);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${pullRequests}\n`);
-            console.log(response)
+            console.log('Status code for GET pull requests: ${response.status}')
 
       - name: Use Pull Requests Data
         run: |
