@@ -1,0 +1,55 @@
+# ST_NAME
+# CLOSED_PULL_REQUESTS (list)
+# NEW_PULL_REQUESTS (list)
+# FAILED_TEST_LST (list)
+# AUTO_PR_LST (list)
+# SECOND_MSG (bool)
+# CUSTOM_STAGE (string)
+
+# We set initial value to string for empty list because there is no data structure and we will update it through shell
+env:
+  closed_pull_requests: ""
+  new_pull_requests: ""
+  failed_test_lst: ""
+  auto_pr_lst: ""
+  second_msg: ${{ false }}
+  custom_stage: ""
+  github_base_url: "https://github.com"
+  github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
+  slack_channel: "borg_github_internal"
+  slack_token_id: "slack_borg_github_internal"
+
+# Actions for HTTP requests: https://github.com/octokit/request-action OR https://github.com/fjogeleit/http-request-action
+
+#TODO retention settings as in  Jenkins buildDiscarder
+
+# Timestamps are supported in logs with shift + T
+# Xterm highlighting is supported by default
+# SkipDefaultCheckout is the default behavior
+
+# Disable concurrent builds
+
+# 5 minutes is the shortest schedule GitHub can do
+name: "Ansible Lint"
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  get_pull_requests:
+    name: Search for open pull requests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fetch All Pull Requests
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            console.log("Pull Requests:", response.data);
