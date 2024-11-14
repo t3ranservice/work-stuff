@@ -59,3 +59,4 @@ jobs:
       - name: Use Pull Requests Data
         run: |
           echo "Pull requests: ${{ steps.fetch-prs.outputs.pulls }}
+          echo "Test"
