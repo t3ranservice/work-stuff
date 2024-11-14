@@ -32,8 +32,9 @@ env:
 # 5 minutes is the shortest schedule GitHub can do
 name: "Ansible Lint"
 on:
-  schedule:
-    - cron: "*/5 * * * *"
+  [push]
+  #schedule:
+  #  - cron: "*/5 * * * *"
 
 concurrency:
   group: ${{ github.workflow }}
@@ -45,6 +46,7 @@ jobs:
 
     steps:
       - name: Fetch All Pull Requests
+        id: fetch-prs
         uses: actions/github-script@v6
         with:
           script: |
@@ -53,3 +55,7 @@ jobs:
               repo: context.repo.repo,
             });
             console.log("Pull Requests:", response.data);
+
+      - name: Use Pull Requests Data
+        run: |
+          echo "Pull requests: ${{ steps.fetch-prs.outputs.pulls }}
