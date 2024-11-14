@@ -70,7 +70,7 @@ jobs:
         with:
           script: |
             const pullRequestData = ${{ steps.fetch-prs.outputs.pulls }}
-            console log(${{ steps.fetch-prs.outputs.pulls }})
+            console.log(${{ steps.fetch-prs.outputs.pulls }})
             console.log("-------------")
             console.log(pullRequestData)
             console.log(pullRequestData[0].title)
