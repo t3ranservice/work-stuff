@@ -56,9 +56,8 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            console.log(response);
             const pullRequests = JSON.stringify(response.data);
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${response}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${pullRequests}\n`);
             console.log("Status code for GET pull requests: " + response.status)
 
       - name: Use data
@@ -67,7 +66,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequestData = JSON.stringify(${{ steps.fetch-prs.outputs.pulls }})
+            const pullRequestData = ${{ steps.fetch-prs.outputs.pulls }}
             console.log(pullRequestData)
             console.log(pullRequestData[0].title)
 
