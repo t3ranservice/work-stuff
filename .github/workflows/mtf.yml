@@ -66,10 +66,10 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequestData = ${{ steps.fetch-prs.outputs.pulls }}
-            console.log(pullRequestData)
-            console.log(pullRequestData[0].title)
-
-      - name: Use Pull Requests Data
-        run: |
-          echo "Pull requests: ${{ steps.fetch-prs.outputs.pulls }}"
+            const pullRequests = ${{ steps.fetch-prs.outputs.pulls }}
+            console.log(pullRequests)
+            pullRequests.forEach(pr =>) {
+            if (pr.base.ref === ${{ env.MASTER_BRANCH_NAME }} && pr.title.includes(${{ env.SEARCH_PATTERN }}))
+            console.log("Test")
+            }
+            else { console.log("123")}
