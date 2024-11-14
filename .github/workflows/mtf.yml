@@ -69,7 +69,7 @@ jobs:
             const pullRequests = ${{ steps.fetch-prs.outputs.pulls }}
             console.log(pullRequests)
             pullRequests.forEach(pr => {
-            if (pr.base.ref === ${{ env.MASTER_BRANCH_NAME }} && pr.title.includes(${{ env.SEARCH_PATTERN }})) {
+            if (pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}')) {
               console.log("Test") 
             } else { console.log("123")}
             });
