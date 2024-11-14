@@ -69,8 +69,6 @@ jobs:
             const pullRequestData = ${{ steps.fetch-prs.outputs.pulls }}
             console.log(pullRequestData)
             console.log(pullRequestData[0].title)
-            const pullRequests = JSON.parse(pullRequestData)
-            console.log(pullRequests)
 
       - name: Use Pull Requests Data
         run: |
