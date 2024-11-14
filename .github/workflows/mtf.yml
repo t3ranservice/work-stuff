@@ -68,7 +68,8 @@ jobs:
           script: |
             const pullRequestData = ${{ steps.fetch-prs.outputs.pulls }}
             console.log(pullRequestData)
-            const pullRequests = JSON.parse(pullRequestData.split('pulls=')[1] || "[]");
+            console.log(pullRequestData[0].title)
+            const pullRequests = JSON.parse(pullRequestData)
             console.log(pullRequests)
 
       - name: Use Pull Requests Data
