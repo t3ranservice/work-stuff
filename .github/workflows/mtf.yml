@@ -66,5 +66,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            console.log(process.env.GITHUB_OUTPUT)
             const pullRequests = JSON.parse(process.env.GITHUB_OUTPUT.split('pulls=')[1] || "[]");
             console.log(pullRequests)
