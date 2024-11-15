@@ -64,6 +64,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            console.log(${{ steps.fetch-prs.outputs.pulls }})
             const pullRequests = JSON.parse(process.env.PULLS);
             const newPullRequests = pullRequests.filter(pr =>
               pr.base.ref === ${{ env.MASTER_BRANCH_NAME }} && pr.title.includes(${{ env.SEARCH_PATTERN }}));
