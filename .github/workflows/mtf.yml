@@ -61,7 +61,6 @@ jobs:
 
       - name: Search for automatic pull requests
         id: process-prs
-        if: steps.fetch-prs.outputs.pulls != ''
         uses: actions/github-script@v6
         with:
           script: |
