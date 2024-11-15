@@ -51,6 +51,7 @@ jobs:
         with:
           script: |
             const valid_prs = [];
+            console.log(valid_prs)
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'FAIL_RES=Get pull requests\n');
             const pullRequests = await github.rest.pulls.list({
               owner: context.repo.owner,
