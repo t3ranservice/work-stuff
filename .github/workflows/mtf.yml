@@ -76,7 +76,7 @@ jobs:
             const masterPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${JSON.stringify(masterPullRequests)}\n`);
-            console.log('Filtered pull requests to master: ', newPullRequests);
+            console.log('Filtered pull requests to master: ', masterPullRequests);
 
       - name: Search for valid pull requests to staging
         id: process-staging-prs
