@@ -56,7 +56,8 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests)}\n`);
+            const test = JSON.stringify(pullRequests)
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${test}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${JSON.stringify(valid_prs)}\n`);
             console.log("Status code for GET pull requests: " + pullRequests.status)
 
@@ -76,16 +77,16 @@ jobs:
           script: |
             console.log(${{ steps.fetch-prs.outputs.pulls }});
 
-      - name: Search for valid pull requests to staging
-        id: process-staging-prs
-        if: steps.fetch-prs.outputs.pulls != ''
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const stagingPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
-              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('fix'));
-            const valid_prs = ${{ steps.process-auto-prs.outputs.valid_prs }};
-            valid_prs.push(...stagingPullRequests);
-            console.log(valid_prs)
+      # - name: Search for valid pull requests to staging
+      #   id: process-staging-prs
+      #   if: steps.fetch-prs.outputs.pulls != ''
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const stagingPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+      #         pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('fix'));
+      #       const valid_prs = ${{ steps.process-auto-prs.outputs.valid_prs }};
+      #       valid_prs.push(...stagingPullRequests);
+      #       console.log(valid_prs)
 
 #newPullRequests.push(...additionalPullRequest);
