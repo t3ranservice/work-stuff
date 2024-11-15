@@ -88,9 +88,7 @@ jobs:
             const additionalPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('fix'));
             console.log(additionalPullRequests)
-            console.log("-----")
-            console.log('${{ steps.process-auto-prs.outputs.valid_prs }}')
             const valid_prs = ${{ steps.process-auto-prs.outputs.valid_prs }}.push(additionalPullRequests);
-            console.log(valid_prs)
+            console.log(${{ steps.process-auto-prs.outputs.valid_prs }})
 
 #newPullRequests.push(...additionalPullRequest);
