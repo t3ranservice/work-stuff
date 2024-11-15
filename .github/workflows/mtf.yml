@@ -18,7 +18,7 @@ env:
   github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
   slack_channel: "borg_github_internal"
   slack_token_id: "slack_borg_github_internal"
-  SEARCH_PATTERN: "[_AUTO_] - pull-request"
+  SEARCH_PATTERN: "fi"
   MASTER_BRANCH_NAME: "main"
   STAGING_BRANCH_NAME: "staging"
 
@@ -65,7 +65,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequests = JSON.parse('${{ steps.fetch-prs.outputs.pulls }}');
             const newPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             console.log('Filtered pull requests: ', newPullRequests)
