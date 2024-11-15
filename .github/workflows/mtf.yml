@@ -19,7 +19,7 @@ env:
   slack_channel: "borg_github_internal"
   slack_token_id: "slack_borg_github_internal"
   SEARCH_PATTERN: "[_AUTO_] - pull-request"
-  MASTER_BRANCH_NAME: "master"
+  MASTER_BRANCH_NAME: "main"
   STAGING_BRANCH_NAME: "staging"
 
 #TODO retention settings as in  Jenkins buildDiscarder
@@ -61,13 +61,14 @@ jobs:
 
       - name: Search for automatic pull requests
         id: process-prs
+        if: steps.fetch-prs.outputs.pulls != ''
         uses: actions/github-script@v6
         with:
           script: |
             console.log(${{ steps.fetch-prs.outputs.pulls }})
             const pullRequests = JSON.parse(process.env.PULLS);
             const newPullRequests = pullRequests.filter(pr =>
-              pr.base.ref === ${{ env.MASTER_BRANCH_NAME }} && pr.title.includes(${{ env.SEARCH_PATTERN }}));
+              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             console.log('Filtered pull requests: ', newPullRequests)
         env:
           PULLS: ${{ steps.fetch-prs.outputs.pulls }}
