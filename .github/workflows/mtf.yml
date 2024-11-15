@@ -89,5 +89,6 @@ jobs:
             const valid_prs = ${{ steps.process-auto-prs.outputs.valid_prs }};
             valid_prs.push(...stagingPullRequests);
             console.log(valid_prs)
+            console.log('v')
 
 #newPullRequests.push(...additionalPullRequest);
