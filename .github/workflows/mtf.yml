@@ -58,7 +58,7 @@ jobs:
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests)}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${valid_prs}}\n`);
-            console.log("Status code for GET pull requests: " + response.status)
+            console.log("Status code for GET pull requests: " + pullRequests.status)
 
       - name: Search for invalid pull requests to master
         id: process-invalid-prs
