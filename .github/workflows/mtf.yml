@@ -57,7 +57,7 @@ jobs:
               repo: context.repo.repo,
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests)}\n`);
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${valid_prs}}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${valid_prs}\n`);
             console.log("Status code for GET pull requests: " + pullRequests.status)
 
       - name: Search for invalid pull requests to master
@@ -78,6 +78,8 @@ jobs:
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             const valid_prs = ${{ steps.fetch-prs.outputs.valid_prs }};
             valid_prs.push(...masterPullRequests);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${JSON.stringify(valid_prs)}\n`);
+            console.log('Filtered pull requests to master: ', masterPullRequests);
 
       - name: Search for valid pull requests to staging
         id: process-staging-prs
