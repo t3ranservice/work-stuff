@@ -9,7 +9,7 @@
 # We set initial value to string for empty lists because there is no list data structure in GitHub Actions
 env:
   closed_pull_requests: ""
-  new_pull_requests: ""
+  new_pull_requests: "[]"
   failed_test_lst: ""
   auto_pr_lst: ""
   second_msg: ${{ false }}
@@ -19,7 +19,6 @@ env:
   slack_channel: "borg_github_internal"
   slack_token_id: "slack_borg_github_internal"
   SEARCH_PATTERN: "[_AUTO_] - pull-request"
-  PULL_N: x_pull["number"]
   MASTER_BRANCH_NAME: "master"
   STAGING_BRANCH_NAME: "staging"
 
@@ -46,12 +45,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "FAIL_RES=Get pull requests" >> $GITHUB_ENV
-      - name: Fetch All Pull Requests
+      - name: Fetch all pull requests
         id: fetch-prs
         uses: actions/github-script@v6
         with:
           script: |
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'FAIL_RES=Get pull requests');
             const response = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -60,16 +59,15 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${pullRequests}\n`);
             console.log("Status code for GET pull requests: " + response.status)
 
-      - name: Use data
+      - name: Search for automatic pull requests
         id: process-prs
         if: steps.fetch-prs.outputs.pulls != ''
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequests = ${{ steps.fetch-prs.outputs.pulls }}
-            console.log(pullRequests)
-            pullRequests.forEach(pr => {
-            if (pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}')) {
-              console.log("Test") 
-            } else { console.log("123")}
-            });
+            const pullRequests = JSON.parse(process.env.PULLS);
+            const newPullRequests = pullRequests.filter(pr =>
+              pr.base.ref === ${{ env.MASTER_BRANCH_NAME }} && pr.title.includes(${{ env.SEARCH_PATTERN }}));
+            console.log('Filtered pull requests: ', newPullRequests)
+        env:
+          PULLS: ${{ steps.fetch-prs.outputs.pulls }}
