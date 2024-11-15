@@ -18,7 +18,7 @@ env:
   github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
   slack_channel: "borg_github_internal"
   slack_token_id: "slack_borg_github_internal"
-  SEARCH_PATTERN: "fi"
+  SEARCH_PATTERN: "[_AUTO_] - pull-request"
   MASTER_BRANCH_NAME: "main"
   STAGING_BRANCH_NAME: "staging"
 
@@ -59,15 +59,13 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${pullRequests}\n`);
             console.log("Status code for GET pull requests: " + response.status)
 
-      - name: Search for automatic pull requests
+      - name: Search for auto pull requests to master
         id: process-prs
         if: steps.fetch-prs.outputs.pulls != ''
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequests = JSON.parse(process.env.PULLS);
+            const pullRequests = JSON.parse(${{ steps.fetch-prs.outputs.pulls }});
             const newPullRequests = pullRequests.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             console.log('Filtered pull requests: ', newPullRequests)
-        env:
-          PULLS: ${{ steps.fetch-prs.outputs.pulls }}
