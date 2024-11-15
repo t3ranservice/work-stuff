@@ -50,7 +50,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'FAIL_RES=Get pull requests');
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'FAIL_RES=Get pull requests\n');
             const response = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
