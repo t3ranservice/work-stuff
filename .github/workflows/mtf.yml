@@ -51,7 +51,6 @@ jobs:
         with:
           script: |
             const valid_prs = [];
-            console.log(valid_prs)
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'FAIL_RES=Get pull requests\n');
             const pullRequests = await github.rest.pulls.list({
               owner: context.repo.owner,
@@ -78,6 +77,7 @@ jobs:
             const masterPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             const valid_prs = ${{ steps.fetch-prs.outputs.valid_prs }}
+            console.log(valid_prs)
             valid_prs.push(...masterPullRequests)
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${JSON.stringify(valid_prs)}\n`);
             console.log('Filtered pull requests to master: ', masterPullRequests);
