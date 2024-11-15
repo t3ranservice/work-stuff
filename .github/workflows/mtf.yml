@@ -74,7 +74,14 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log('${{ steps.fetch-prs.outputs.pulls }}');
+            console.log(${{ steps.fetch-prs.outputs.pulls }});
+            const masterPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
+            const valid_prs = ${{ steps.fetch-prs.outputs.valid_prs }}
+            console.log(valid_prs)
+            valid_prs.push(...masterPullRequests)
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${JSON.stringify(valid_prs)}\n`);
+            console.log('Filtered pull requests to master: ', masterPullRequests);
 
       - name: Search for valid pull requests to staging
         id: process-staging-prs
