@@ -93,7 +93,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log(toJSON(${{ needs.get_pull_requests.outputs.invalidMasterPrs }}));
+            console.log(${{ toJSON( needs.get_pull_requests.outputs.invalidMasterPrs )}});
             const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
             const prs = ${{ needs.get_pull_requests.outputs.invalidMasterPrs }}
             prs.forEach(pr => {
