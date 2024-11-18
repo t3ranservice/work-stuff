@@ -41,8 +41,12 @@ concurrency:
 
 jobs:
   get_pull_requests:
-    name: Search for open pull requests
+    name: Find and filter pull requests
     runs-on: ubuntu-latest
+    outputs:
+      validMasterPrs: ${{ steps.filter-prs.outputs.validMasterPrs }}
+      invalidMasterPrs: ${{ steps.filter-prs.outputs.invalidMasterPrs }}
+      validStagingPrs: ${{ steps.filter-prs.outputs.validStagingPrs }}
 
     steps:
       - name: Fetch all pull requests
@@ -58,7 +62,7 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests.data)}\n`);
             console.log("Status code for GET pull requests: " + pullRequests.status)
 
-      - name: Find PRs to master, staging and invalid
+      - name: Filter all pull requests
         id: filter-prs
         if: steps.fetch-prs.outputs.pulls != ''
         uses: actions/github-script@v6
@@ -71,9 +75,22 @@ jobs:
             const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
                pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}')
 
-            console.log(validMasterPrs)
-            console.log(`InvalidMasterPRS: ${invalidMasterPrs}`)
-            console.log(`StagingPRS: ${validStagingPrs}`)
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validMasterPrs=${JSON.stringify(validMasterPrs)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidMasterPrs=${JSON.stringify(invalidMasterPrs)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validStagingPrs=${JSON.stringify(validStagingPrs)}\n`);
+
+  process_pull_requests:
+    name: "Process each Pull Request"
+    runs-on: ubuntu-latest
+    needs: get_pull_requests
+
+    steps:
+      - name: "Process invalid PRs"
+        id: process-invalid-prs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log(${{needs.get_pull_requests.outputs.validMasterPrs}})
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
