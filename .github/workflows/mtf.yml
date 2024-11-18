@@ -114,7 +114,7 @@ jobs:
     needs: get_pull_requests
     strategy:
       matrix:
-        pr: ${{ needs.get_pull_requests.outputs.validStagingPrs }}
+        pr: ${{ fromJson(needs.get_pull_requests.outputs.validStagingPrs) }}
 
     steps:
       - name: "Test1"
