@@ -88,11 +88,11 @@ jobs:
     steps:
       - name: "Process invalid PRs"
         id: process-invalid-prs
+        if: ${{needs.get_pull_requests.outputs.invalidMasterPrs}} != ''
         uses: actions/github-script@v6
         with:
           script: |
             const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
-            console.log(${{needs.get_pull_requests.outputs.invalidMasterPrs}})
             const prs = ${{needs.get_pull_requests.outputs.invalidMasterPrs}}
             prs.forEach(pr => {
               response = github.rest.pulls.update({
@@ -102,6 +102,7 @@ jobs:
                 state: 'closed',
                 body: ERR_MSG,
                 });
+              print(response)
               if (response.status === 200) {
                 console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`);
                 } else {
