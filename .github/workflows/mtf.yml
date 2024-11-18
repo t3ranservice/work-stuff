@@ -127,7 +127,7 @@ jobs:
             const changed_files = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: matrix.pr.number
+              pull_number: ${{ matrix.pr.number }}
             });
             console.log(changed_files);
 
