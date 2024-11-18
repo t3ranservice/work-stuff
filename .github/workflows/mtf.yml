@@ -91,7 +91,8 @@ jobs:
           script: |
             const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
             console.log(${{needs.get_pull_requests.outputs.invalidMasterPrs}})
-            '${{needs.get_pull_requests.outputs.invalidMasterPrs}}'.forEach(pr =>
+            const test = ${{needs.get_pull_requests.outputs.invalidMasterPrs}}
+            test.forEach(pr =>
               console.log(pr.number))
 
       # - name: Search for auto pull requests to master
