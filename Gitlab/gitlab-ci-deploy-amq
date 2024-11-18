@@ -6,7 +6,7 @@ stages:
   - tf-destroy
   - ansible
 
-
+123
 clone-repo:
   stage: clone-repo
   before_script:

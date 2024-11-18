@@ -9,7 +9,7 @@ include:
     ref: '2.0.3' # Make sure to use latest tag
     file:
       - 'templates/vault-integrator.yml'
-
+54
 variables:
   DIR_NAME:
     value: "AMQ"
