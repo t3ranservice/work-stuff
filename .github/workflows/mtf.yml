@@ -89,7 +89,7 @@ jobs:
     steps:
       - name: "Process invalid PRs"
         id: process-invalid-prs
-        if: ${{ needs.get_pull_requests.outputs.invalidMasterPrs }} != ''
+        if: ${{ needs.get_pull_requests.outputs.invalidMasterPrs }} != '[]'
         uses: actions/github-script@v6
         with:
           script: |
