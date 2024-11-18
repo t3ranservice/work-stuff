@@ -92,20 +92,20 @@ jobs:
             const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
             console.log(${{needs.get_pull_requests.outputs.invalidMasterPrs}})
             const prs = ${{needs.get_pull_requests.outputs.invalidMasterPrs}}
-            prs.forEach(pr =>
+            prs.forEach(pr => {
               response = github.rest.pulls.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: pr.number,
                 state: 'closed',
                 body: ERR_MSG,
-              });
+                });
               if (response.status === 200) {
-                console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`)
-              } else {
-                console.log(`Couldn't close ${pr.title}/${pr.number}. Status code: ${response.status}`)
-               }
-              )
+                console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`);
+                } else {
+                  console.log(`Couldn't close ${pr.title}/${pr.number}. Status code: ${response.status}`);
+                  }
+              });
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
