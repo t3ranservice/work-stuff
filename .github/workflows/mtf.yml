@@ -144,11 +144,28 @@ jobs:
             const files = fs.readdirSync(currentDir);
             console.log(files);
 
-      # - name: "Checkout source branch"
-      #   id: checkout-scm
-      #   uses: actions/checkout@v4
-      #   with:
-      #     ref: ${{ matrix.pr.head }}
+      - name: "Checkout source branch"
+        id: checkout-scm
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.pr.head }}
+
+      - name: "Get list of changed files"
+        id: test
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('${{ github.repository }}')
+            console.log(`Current working directory: ${process.cwd()}`);
+            const fs = require('fs');
+            const path = require('path');
+
+            // Get the current working directory
+            const currentDir = process.cwd();
+
+            // Read files and directories in the current directory
+            const files = fs.readdirSync(currentDir);
+            console.log(files);
 
       # - name: "Run ansible-lint"
       #   uses: ansible/ansible-lint@main
