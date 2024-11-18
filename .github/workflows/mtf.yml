@@ -117,7 +117,7 @@ jobs:
         pr: ${{ needs.get_pull_requests.outputs.validStagingPrs }}
 
     steps:
-      - name: "Test1"
+      - name: "Test12"
         id: test
         uses: actions/github-script@v6
         with:
