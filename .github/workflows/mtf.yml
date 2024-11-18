@@ -63,13 +63,14 @@ jobs:
         with:
           script: |
             const validMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
-              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
+              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}').map(pr => ({ head: pr.head.ref, number: pr.number}));
             const invalidMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
                pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
                pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}').map(pr => ({ head: pr.head.ref, number: pr.number}));
             console.log(invalidMasterPrs)
             console.log(validStagingPrs)
+            console.log(validMasterPrs)
 
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validMasterPrs=${JSON.stringify(validMasterPrs)}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidMasterPrs=${JSON.stringify(invalidMasterPrs)}\n`);
