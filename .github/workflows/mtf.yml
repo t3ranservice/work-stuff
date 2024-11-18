@@ -103,7 +103,7 @@ jobs:
                 state: 'closed',
                 body: ERR_MSG,
                 });
-              print(response)
+              console.log(response);
               if (response.status === 200) {
                 console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`);
                 } else {
