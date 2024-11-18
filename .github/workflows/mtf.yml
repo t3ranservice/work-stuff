@@ -117,7 +117,7 @@ jobs:
 
       - name: "Process valid PRs to staging"
         id: process-valid-staging-prs
-        if: ${{ needs.get_pull_requests.outputs.invalidStagingPrs != '[]' }}
+        if: ${{ needs.get_pull_requests.outputs.validStagingPrs != '[]' }}
         uses: actions/github-script@v6
         with:
           script: |
