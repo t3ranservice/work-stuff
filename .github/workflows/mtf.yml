@@ -54,7 +54,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, 'FAIL_RES=Get pull requests\n');
             const pullRequests = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -90,11 +89,11 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log(${{needs.get_pull_requests.outputs.validMasterPrs}})
-            console.log("-------------------------")
+            const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
             console.log(${{needs.get_pull_requests.outputs.invalidMasterPrs}})
-            console.log("-------------------------")
-            console.log(${{needs.get_pull_requests.outputs.validStagingPrs}})
+
+            ${{needs.get_pull_requests.outputs.invalidMasterPrs}}.forEach(pr =>
+              console.log(pr.number))
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
