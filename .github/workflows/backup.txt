@@ -10,3 +10,9 @@
 
             const updPulls = ${{ steps.process-auto-prs.outputs.valid_prs }}.push('123');
             console.log(updPulls)
+
+            const response = await github.rest.pulls.update({
+              owner: context.repo.owner
+              repo: context.repo.repo
+              pull_number: 
+            });
