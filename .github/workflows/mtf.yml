@@ -101,9 +101,9 @@ jobs:
                 body: ERR_MSG,
               });
               if (response.status === 200) {
-                console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status} )
+                console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`)
               } else {
-                console.log(`Couldn't close ${pr.title}/${pr.number}. Status code: ${response.status}` )
+                console.log(`Couldn't close ${pr.title}/${pr.number}. Status code: ${response.status}`)
                }
             )
 
