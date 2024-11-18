@@ -91,6 +91,10 @@ jobs:
         with:
           script: |
             console.log(${{needs.get_pull_requests.outputs.validMasterPrs}})
+            console.log("-------------------------")
+            console.log(${{needs.get_pull_requests.outputs.invalidMasterPrs}})
+            console.log("-------------------------")
+            console.log(${{needs.get_pull_requests.outputs.validStagingPrs}})
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
