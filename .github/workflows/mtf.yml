@@ -96,7 +96,7 @@ jobs:
             const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
             const prs = ${{ needs.get_pull_requests.outputs.invalidMasterPrs }}
             prs.forEach(pr => {
-              response = github.rest.pulls.update({
+              response = await github.rest.pulls.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: pr.number,
