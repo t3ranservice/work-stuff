@@ -111,6 +111,7 @@ jobs:
 
   process_valid_pull_requests_staging:
     name: "Process valid PRs to staging"
+    if: ${{ needs.get_pull_requests.outputs.validStagingPrs != '[]' }}
     runs-on: ubuntu-latest
     needs: get_pull_requests
     strategy:
@@ -118,18 +119,23 @@ jobs:
         pr: ${{ fromJson(needs.get_pull_requests.outputs.validStagingPrs) }}
 
     steps:
-      - name: "Test1"
-        id: test
+      - name: "Get list of changed files"
+        id: get-changed-files
         uses: actions/github-script@v6
         with:
           script: |
-            console.log('${{ matrix.pr.head }}')
+            const changed_files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: matrix.pr.number
+            });
+            console.log(changed_files);
 
-    # steps:
-    #   - name: "Checkout SCM"
-    #     id: checkout-scm
-    #     if: ${{ needs.get_pull_requests.outputs.validStagingPrs != '[]' }} || ${{ needs.get_pull_requests.outputs.validMasterPrs != '[]' }}
-    #     uses: actions/checkout@v4
+      # - name: "Checkout source branch"
+      #   id: checkout-scm
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ matrix.pr.head }}
 
     # - name: "Process valid PRs to staging"
     #   id: process-valid-staging-prs
