@@ -138,6 +138,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ matrix.pr.head }}
+      - name: Debug
+        run: |
+          echo ${{ steps.get-changed-files.outputs.filesNames }}
+          echo "${{ steps.get-changed-files.outputs.filesNames }}"
+          echo '${{ steps.get-changed-files.outputs.filesNames }}'
+          echo $test
+        env:
+          test: ${{ steps.get-changed-files.outputs.filesNames }}
 
       # Need to makes this accept list properly
       - name: "Run ansible-lint"
