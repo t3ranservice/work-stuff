@@ -113,6 +113,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            console.log("Add more stuff")
 
       - name: "Process valid PRs to staging"
         id: process-valid-staging-prs
@@ -120,6 +121,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            console.log("Add more stuff")
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
