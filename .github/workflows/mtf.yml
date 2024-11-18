@@ -55,7 +55,9 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-
+            console.log(pullRequests)
+            console.log("---------")
+            console.log(pullRequests.data)
             const valid_master_prs = pullRequests.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
 
