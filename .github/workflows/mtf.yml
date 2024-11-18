@@ -129,7 +129,7 @@ jobs:
               repo: context.repo.repo,
               pull_number: ${{ matrix.pr.number }}
             });
-            const filesNames = full_files_list.data.map(file => file.filename);
+            const filesNames = filesFullList.data.map(file => file.filename);
             cosnole.log(filesNames)
 
       # - name: "Checkout source branch"
