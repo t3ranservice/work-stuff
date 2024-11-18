@@ -105,7 +105,7 @@ jobs:
               } else {
                 console.log(`Couldn't close ${pr.title}/${pr.number}. Status code: ${response.status}`)
                }
-            )
+              )
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
