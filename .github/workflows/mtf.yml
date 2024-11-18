@@ -28,7 +28,7 @@ env:
 # Xterm highlighting is supported by default
 # SkipDefaultCheckout is the default behavior
 permissions:
-  pull_requests: write
+  pull-requests: write
 
 # 5 minutes is the shortest schedule GitHub can do
 # [push] is for tests
