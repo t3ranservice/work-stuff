@@ -55,13 +55,10 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            console.log(pullRequests)
-            console.log("---------")
-            console.log(pullRequests.data)
-            const valid_master_prs = pullRequests.filter(pr =>
+            const valid_master_prs = pullRequests.data.filter(pr =>
               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
 
-            const stagingPullRequests = pullRequests.filter(pr =>
+            const stagingPullRequests = pullRequests.data.filter(pr =>
                pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('fix'));
 
             console.log(valid_master_prs);
