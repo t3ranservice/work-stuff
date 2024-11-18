@@ -1,0 +1,12 @@
+            pullRequests.forEach(pr => {
+            if (pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}')) {
+              const new_pull_request = pr
+              
+
+
+
+            } else { console.log("123")}
+            });
+
+            const updPulls = ${{ steps.process-auto-prs.outputs.valid_prs }}.push('123');
+            console.log(updPulls)
