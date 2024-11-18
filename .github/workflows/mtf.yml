@@ -134,6 +134,15 @@ jobs:
             console.log(filesNames)
             console.log('${{ github.repository }}')
             console.log(`Current working directory: ${process.cwd()}`);
+            const fs = require('fs');
+            const path = require('path');
+
+            // Get the current working directory
+            const currentDir = process.cwd();
+
+            // Read files and directories in the current directory
+            const files = fs.readdirSync(currentDir);
+            console.log(files);
 
       # - name: "Checkout source branch"
       #   id: checkout-scm
