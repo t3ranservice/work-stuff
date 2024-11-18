@@ -67,7 +67,7 @@ jobs:
             const invalidMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
                pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
-               pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}')
+               pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}').map(pr => ({ head: pr.head.ref, number: pr.number}));
             console.log(invalidMasterPrs)
             console.log(validStagingPrs)
 
