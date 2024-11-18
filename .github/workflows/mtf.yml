@@ -71,7 +71,7 @@ jobs:
             const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
                pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}')
 
-            console.log(`MasterPRS: ${validMasterPrs}`)
+            console.log(validMasterPrs)
             console.log(`InvalidMasterPRS: ${invalidMasterPrs}`)
             console.log(`StagingPRS: ${validStagingPrs}`)
 
