@@ -77,13 +77,13 @@ jobs:
   # Now process each PR (valid to master, invalid to master, valid to staging)
   process_invalid_pull_requests:
     name: "Process invalid PRs to master"
+    if: ${{ needs.get_pull_requests.outputs.invalidMasterPrs != '[]' }}
     runs-on: ubuntu-latest
     needs: get_pull_requests
 
     steps:
       - name: "Close invalid request to master"
         id: process-invalid-prs
-        if: ${{ needs.get_pull_requests.outputs.invalidMasterPrs != '[]' }}
         uses: actions/github-script@v6
         with:
           script: |
@@ -116,7 +116,7 @@ jobs:
         pr: ${{ needs.get_pull_requests.outputs.validStagingPrs }}
 
     steps:
-      - name: "Test"
+      - name: "Test1"
         id: test
         uses: actions/github-script@v6
         with:
