@@ -132,17 +132,6 @@ jobs:
             const filesNames = filesFullList.data.map(file => file.filename).join(' ');
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `filesNames=${JSON.stringify(filesNames)}\n`);
             console.log(filesNames)
-            console.log('${{ github.repository }}')
-            console.log(`Current working directory: ${process.cwd()}`);
-            const fs = require('fs');
-            const path = require('path');
-
-            // Get the current working directory
-            const currentDir = process.cwd();
-
-            // Read files and directories in the current directory
-            const files = fs.readdirSync(currentDir);
-            console.log(files);
 
       - name: "Checkout source branch"
         id: checkout-scm
@@ -150,24 +139,8 @@ jobs:
         with:
           ref: ${{ matrix.pr.head }}
 
-      - name: "Get list of changed files"
-        id: test
-        uses: actions/github-script@v6
-        with:
-          script: |
-            console.log('${{ github.repository }}')
-            console.log(`Current working directory: ${process.cwd()}`);
-            const fs = require('fs');
-            const path = require('path');
-
-            // Get the current working directory
-            const currentDir = process.cwd();
-
-            // Read files and directories in the current directory
-            const files = fs.readdirSync(currentDir);
-            console.log(files);
-            const files2 = fs.readdirSync('${{ github.workspace }}')
-            console.log(files2)
+      - name: Debug filenames
+        run: echo ${{ steps.get-changed-files.outputs.filesNames }}
 
       - name: "Run ansible-lint"
         uses: ansible/ansible-lint@main
