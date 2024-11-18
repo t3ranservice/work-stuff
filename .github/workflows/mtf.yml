@@ -69,6 +69,7 @@ jobs:
             const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
                pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}')
             console.log(invalidMasterPrs)
+            console.log(validStagingPrs)
 
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validMasterPrs=${JSON.stringify(validMasterPrs)}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidMasterPrs=${JSON.stringify(invalidMasterPrs)}\n`);
