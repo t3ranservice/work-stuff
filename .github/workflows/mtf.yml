@@ -130,6 +130,7 @@ jobs:
               pull_number: ${{ matrix.pr.number }}
             });
             console.log(changed_files);
+            cosnole.log('1');
 
       # - name: "Checkout source branch"
       #   id: checkout-scm
