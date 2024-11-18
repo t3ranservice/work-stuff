@@ -1,19 +1,6 @@
-# ST_NAME
-# CLOSED_PULL_REQUESTS (list)
-# NEW_PULL_REQUESTS (list)
-# FAILED_TEST_LST (list)
-# AUTO_PR_LST (list)
-# SECOND_MSG (bool)
-# CUSTOM_STAGE (string)
-
 # We set initial value to string for empty lists because there is no list data structure in GitHub Actions
 env:
-  closed_pull_requests: ""
-  new_pull_requests: "[]"
-  failed_test_lst: ""
-  auto_pr_lst: ""
   second_msg: ${{ false }}
-  custom_stage: ""
   github_base_url: "https://github.com"
   github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
   slack_channel: "borg_github_internal"
@@ -24,32 +11,38 @@ env:
 
 #TODO retention settings as in  Jenkins buildDiscarder
 
+# Jenkins settings below
 # Timestamps are supported in logs with shift + T
 # Xterm highlighting is supported by default
 # SkipDefaultCheckout is the default behavior
+
+# We need this to modify default scope of built-in GITHUB_TOKEN to close PRs
 permissions:
   pull-requests: write
 
 # 5 minutes is the shortest schedule GitHub can do
-# [push] is for tests
+# Uncomment schedule and remove push once in prod
 name: "Ansible Lint"
 on:
   [push]
   #schedule:
   #  - cron: "*/5 * * * *"
 
+# Disallow running same workflow concurrently
 concurrency:
   group: ${{ github.workflow }}
 
+# We use github-script action which is basically a wrapper around NodeJS octokit module so we can use JS code to do fun
 jobs:
   get_pull_requests:
     name: Find and filter pull requests
     runs-on: ubuntu-latest
-    outputs:
+    outputs: # To pass variables to other jobs
       validMasterPrs: ${{ steps.filter-prs.outputs.validMasterPrs }}
       invalidMasterPrs: ${{ steps.filter-prs.outputs.invalidMasterPrs }}
       validStagingPrs: ${{ steps.filter-prs.outputs.validStagingPrs }}
 
+    # Get all Pull Requests and pass to further steps
     steps:
       - name: Fetch all pull requests
         id: fetch-prs
@@ -62,7 +55,7 @@ jobs:
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests.data)}\n`);
             console.log("Status code for GET pull requests: " + pullRequests.status)
-
+        # Find auto PRs to master (valid), find non-auto PRs to master (invalid), find PRs to staging (valid)
       - name: Filter all pull requests
         id: filter-prs
         if: steps.fetch-prs.outputs.pulls != ''
@@ -81,6 +74,7 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidMasterPrs=${JSON.stringify(invalidMasterPrs)}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validStagingPrs=${JSON.stringify(validStagingPrs)}\n`);
 
+  # Now process each PR (valid to master, invalid to master, valid to staging)
   process_pull_requests:
     name: "Process each Pull Request"
     runs-on: ubuntu-latest
@@ -103,7 +97,6 @@ jobs:
                 state: 'closed',
                 body: ERR_MSG,
                 }).then(response => {
-                  console.log(response);
                   if (response.status === 200) {
                     console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`);
                   } else {
@@ -113,6 +106,20 @@ jobs:
                     console.error(`Failed to close PR ${pr.title}/${pr.number}: `, error.message);
                 });
               });
+
+      - name: "Process valid PRs to master"
+        id: process-valid-master-prs
+        if: ${{ needs.get_pull_requests.outputs.validMasterPrs != '[]' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+
+      - name: "Process valid PRs to staging"
+        id: process-valid-staging-prs
+        if: ${{ needs.get_pull_requests.outputs.invalidStagingPrs != '[]' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
 
       # - name: Search for auto pull requests to master
       #   id: process-auto-prs
