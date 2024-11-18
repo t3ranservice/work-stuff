@@ -63,7 +63,7 @@ jobs:
         with:
           script: |
             const validMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
-              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}').map(pr => ({ head: pr.head.ref, number: pr.number}));
+              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}')).map(pr => ({ head: pr.head.ref, number: pr.number }));
             const invalidMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
                pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
             const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
