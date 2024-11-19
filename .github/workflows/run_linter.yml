@@ -49,9 +49,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: "Test"
-        run: ls -la
-
+      # Otherwise linter accept list of files as a single string filename
       - name: "Remove trailing and leading quotes"
         id: format-filenames
         run: |
@@ -60,7 +58,6 @@ jobs:
           FILENAMES="${FILENAMES#\"}"
           echo "FILENAMES=$FILENAMES" >> $GITHUB_ENV
 
-      #  Need to makes this accept list properly
       - name: "Run ansible-lint"
         uses: ansible/ansible-lint@main
         with:
