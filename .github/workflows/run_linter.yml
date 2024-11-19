@@ -47,6 +47,9 @@ jobs:
         id: checkout-scm
         uses: actions/checkout@v4
 
+      - name: "Test"
+        run: ls -la
+
       - name: "Remove trailing and leading quotes"
         id: format-filenames
         run: |
