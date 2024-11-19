@@ -1,3 +1,5 @@
+# We need branch protection rule for all below to have purpose
+
 env:
   second_msg: ${{ false }}
   github_base_url: "https://github.com"
@@ -24,8 +26,8 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  process_valid_staging_pull_request:
-    name: "Process valid PRs to staging"
+  run_ansible_lint:
+    name: "Run ansible-lint"
     runs-on: ubuntu-latest
 
     steps:
@@ -59,6 +61,12 @@ jobs:
           echo "FILENAMES=$FILENAMES" >> $GITHUB_ENV
 
       - name: "Run ansible-lint"
+        id: run-lint
         uses: ansible/ansible-lint@main
         with:
           args: ${{ env.FILENAMES }}
+
+      - name: "Close pull request if test failed"
+        id: close-failed-pr
+        if: steps.run-lint.outcome == 'failure'
+        run: echo "FAILED TESTS"
