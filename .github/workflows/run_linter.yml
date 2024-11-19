@@ -66,24 +66,21 @@ jobs:
         with:
           args: ${{ env.FILENAMES }}
 
-      - name: "Close pull request if test failed"
+      - name: "Close pull request if tests failed"
         id: close-failed-pr
         if: failure()
-        run: echo "FAILED TESTS"
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await octokit.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.number }}
+              body: "Pull Request has been closed because it didn't pass tests"
+            });
 
-      - name: "This should not run"
-        run: echo "123"
-
-      # - name: "Get list of changed files"
-      #   id: get-changed-files
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const filesFullList = await github.rest.pulls.listFiles({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         pull_number: ${{ matrix.pr.number }}
-      #       });
-      #       const filesNames = filesFullList.data.map(file => file.filename).join(' ');
-      #       require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `filesNames=${JSON.stringify(filesNames)}\n`);
-      #       console.log(filesNames)
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ github.event.number }}
+            });
