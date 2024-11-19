@@ -34,9 +34,14 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log('${{ github.event.number }}')
-            console.log('${{ github.event.pull_request }}')
-            console.log('${{ github.event.changes }}')
+            const filesFullList = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ github.event.number }}
+            });
+            const filesNames = filesFullList.data.map(file => file.filename).join(' ');
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `filesNames=${JSON.stringify(filesNames)}\n`);
+            console.log(filesNames)
 
       - name: "Checkout source branch"
         id: checkout-scm
