@@ -1,15 +1,5 @@
 # We need branch protection rule for all below to have purpose
 
-env:
-  second_msg: ${{ false }}
-  github_base_url: "https://github.com"
-  github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
-  slack_channel: "borg_github_internal"
-  slack_token_id: "slack_borg_github_internal"
-  SEARCH_PATTERN: "[_AUTO_] - pull-request"
-  MASTER_BRANCH_NAME: "main"
-  STAGING_BRANCH_NAME: "staging"
-
 permissions:
   pull-requests: write
 
@@ -66,6 +56,7 @@ jobs:
         with:
           args: ${{ env.FILENAMES }}
 
+      # Add SLACK_API_TOKEN in Github secrets
       - name: "Send Slack notification (fail)"
         id: send-fail-message
         if: failure()
@@ -77,6 +68,22 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+
+      # 'Allow GitHub Actions to create and approve pull requests' has to be enabled in repository Settings > Actions > General (most bottom line)
+      - name: "Open Pull Request to master"
+        id: open-master-pr
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.rest.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            head: "staging",
+            base: "main",
+            title: "[_AUTO_] - pull-request",
+            body: "Automatic Pull Request to master1"
+            });
 
       # Uncomment if logic is desired
       # - name: "Close pull request if tests failed"
