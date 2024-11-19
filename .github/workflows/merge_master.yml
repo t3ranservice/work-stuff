@@ -1,0 +1,54 @@
+# We need branch protection rule for all below to have purpose
+
+env:
+  second_msg: ${{ false }}
+  github_base_url: "https://github.com"
+  github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
+  slack_channel: "borg_github_internal"
+  slack_token_id: "slack_borg_github_internal"
+  SEARCH_PATTERN: "[_AUTO_] - pull-request"
+  MASTER_BRANCH_NAME: "main"
+  STAGING_BRANCH_NAME: "staging"
+
+permissions:
+  pull-requests: write
+
+name: "Merge to master"
+on:
+  push:
+    branches:
+      - staging
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  auto_merge_master:
+    name: "Merge to master automatically"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Open Pull Request to master"
+        id: get-changed-files
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await octokit.rest.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            head: "staging"
+            base: "main",
+            title: "[_AUTO_] - pull-request",
+            body: "Automatic Pull Request to master"
+            });
+
+  # - name: "Send Slack notification (success)"
+  #   id: send-fail-message
+  #   uses: rtCamp/action-slack-notify@v2
+  #   env:
+  #     SLACK_CHANNEL: "test_interaction_channel2"
+  #     SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+  #     SLACK_MESSAGE: "Test have failed"
+  #     SLACK_COLOR: "success"
+  #     SLACK_USERNAME: "borg-sphere"
+  #     SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
