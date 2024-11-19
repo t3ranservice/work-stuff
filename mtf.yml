@@ -1,0 +1,175 @@
+# We set initial value to string for empty lists because there is no list data structure in GitHub Actions
+env:
+  second_msg: ${{ false }}
+  github_base_url: "https://github.com"
+  github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
+  slack_channel: "borg_github_internal"
+  slack_token_id: "slack_borg_github_internal"
+  SEARCH_PATTERN: "[_AUTO_] - pull-request"
+  MASTER_BRANCH_NAME: "main"
+  STAGING_BRANCH_NAME: "staging"
+
+#TODO retention settings as in  Jenkins buildDiscarder
+
+# Jenkins settings below
+# Timestamps are supported in logs with shift + T
+# Xterm highlighting is supported by default
+# SkipDefaultCheckout is the default behavior
+
+# We need this to modify default scope of built-in GITHUB_TOKEN to close PRs
+permissions:
+  pull-requests: write
+
+# 5 minutes is the shortest schedule GitHub can do
+# Uncomment schedule and remove push once in prod
+name: "Ansible Lint"
+on:
+  [push]
+  #schedule:
+  #  - cron: "*/5 * * * *"
+
+# Disallow running same workflow concurrently
+concurrency:
+  group: ${{ github.workflow }}
+
+# We use github-script action which is basically a wrapper around NodeJS octokit module so we can use JS code to do fun
+jobs:
+  get_pull_requests:
+    name: Find and filter pull requests
+    runs-on: ubuntu-latest
+    outputs: # To pass variables to other jobs
+      validMasterPrs: ${{ steps.filter-prs.outputs.validMasterPrs }}
+      invalidMasterPrs: ${{ steps.filter-prs.outputs.invalidMasterPrs }}
+      validStagingPrs: ${{ steps.filter-prs.outputs.validStagingPrs }}
+
+    # Get all Pull Requests and pass to further steps
+    steps:
+      - name: Fetch all pull requests
+        id: fetch-prs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pullRequests = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests.data)}\n`);
+            console.log("Status code for GET pull requests: " + pullRequests.status)
+        # Find auto PRs to master (valid), find non-auto PRs to master (invalid), find PRs to staging (valid)
+      - name: Filter all pull requests
+        id: filter-prs
+        if: steps.fetch-prs.outputs.pulls != ''
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const validMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
+            const invalidMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+               pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
+            const validStagingPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr => 
+               pr.base.ref === '${{ env.STAGING_BRANCH_NAME}}')
+            console.log(invalidMasterPrs)
+
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validMasterPrs=${JSON.stringify(validMasterPrs)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidMasterPrs=${JSON.stringify(invalidMasterPrs)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `validStagingPrs=${JSON.stringify(validStagingPrs)}\n`);
+
+  # Now process each PR (valid to master, invalid to master, valid to staging)
+  process_invalid_pull_requests:
+    name: "Process invalid PRs to master"
+    runs-on: ubuntu-latest
+    needs: get_pull_requests
+
+    steps:
+      - name: "Close invalid request to master"
+        id: process-invalid-prs
+        if: ${{ needs.get_pull_requests.outputs.invalidMasterPrs != '[]' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const ERR_MSG = "Humans are not allowed to create pull requests to a master!\nCI/CD will do this"
+            const prs = ${{ needs.get_pull_requests.outputs.invalidMasterPrs }}
+            prs.forEach(pr => {
+              github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: 'closed',
+                body: ERR_MSG,
+                }).then(response => {
+                  if (response.status === 200) {
+                    console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been closed! Status code: ${response.status}`);
+                  } else {
+                    console.log(`Couldn't close ${pr.title}/${pr.number}. Status code: ${response.status}`);
+                  }
+                  }).catch(error => {
+                    console.error(`Failed to close PR ${pr.title}/${pr.number}: `, error.message);
+                });
+              });
+
+  process_valid_pull_requests_staging:
+    name: "Process valid PRs to staging"
+    runs-on: ubuntu-latest
+    needs: get_pull_requests
+    strategy:
+      matrix:
+        pr: ${{ needs.get_pull_requests.outputs.validStagingPrs }}
+
+    steps:
+      - name: "Test"
+        id: test
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log(${{ matrix.pr }})
+
+    # steps:
+    #   - name: "Checkout SCM"
+    #     id: checkout-scm
+    #     if: ${{ needs.get_pull_requests.outputs.validStagingPrs != '[]' }} || ${{ needs.get_pull_requests.outputs.validMasterPrs != '[]' }}
+    #     uses: actions/checkout@v4
+
+    # - name: "Process valid PRs to staging"
+    #   id: process-valid-staging-prs
+    #   if: ${{ needs.get_pull_requests.outputs.validStagingPrs != '[]' }}
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       console.log("Add more stuff")
+
+    # - name: "Process valid PRs to master"
+    #   id: process-valid-master-prs
+    #   if: ${{ needs.get_pull_requests.outputs.validMasterPrs != '[]' }}
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       console.log("Add more stuff")
+
+    # - name: Search for auto pull requests to master
+    #   id: process-auto-prs
+    #   if: steps.fetch-prs.outputs.pulls != ''
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       console.log(${{ steps.fetch-prs.outputs.pulls }});
+    #       const masterPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+    #         pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'));
+    #       const valid_prs = ${{ steps.fetch-prs.outputs.valid_prs }}
+    #       console.log(valid_prs)
+    #       valid_prs.push(...masterPullRequests)
+    #       require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `valid_prs=${JSON.stringify(valid_prs)}\n`);
+    #       console.log('Filtered pull requests to master: ', masterPullRequests);
+
+    # - name: Search for valid pull requests to staging
+    #   id: process-staging-prs
+    #   if: steps.fetch-prs.outputs.pulls != ''
+    #   uses: actions/github-script@v6
+    #   with:
+    #     script: |
+    #       const stagingPullRequests = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+    #         pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('fix'));
+    #       const valid_prs = ${{ steps.process-auto-prs.outputs.valid_prs }};
+    #       valid_prs.push(...stagingPullRequests);
+    #       console.log(valid_prs)
+
+#newPullRequests.push(...additionalPullRequest);
