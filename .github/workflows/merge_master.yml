@@ -33,7 +33,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const response = await octokit.rest.pulls.create({
+            const response = await github.rest.pulls.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             head: "staging",
@@ -41,6 +41,7 @@ jobs:
             title: "[_AUTO_] - pull-request",
             body: "Automatic Pull Request to master"
             });
+            console.log(response.data);
 
   # - name: "Send Slack notification (success)"
   #   id: send-fail-message
