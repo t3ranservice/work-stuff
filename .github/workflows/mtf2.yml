@@ -35,6 +35,8 @@ jobs:
         with:
           script: |
             console.log('${{ github.event }}')
+            console.log('${{ github.event.number }}');
+            console.log('${{ github.event.changes }}');
 
       - name: "Checkout source branch"
         id: checkout-scm
