@@ -36,7 +36,7 @@ jobs:
             const response = await octokit.rest.pulls.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            head: "staging"
+            head: "staging",
             base: "main",
             title: "[_AUTO_] - pull-request",
             body: "Automatic Pull Request to master"
