@@ -65,9 +65,8 @@ jobs:
         uses: ansible/ansible-lint@main
         with:
           args: ${{ env.FILENAMES }}
-        continue-on-error: true
 
       - name: "Close pull request if test failed"
         id: close-failed-pr
-        if: steps.run-lint.outcome == 'failure'
+        if: failure()
         run: echo "FAILED TESTS"
