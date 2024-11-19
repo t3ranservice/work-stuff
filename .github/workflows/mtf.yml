@@ -155,11 +155,11 @@ jobs:
         run: |
           echo "Filenames: $FILENAMES"
 
-      # Need to makes this accept list properly
-      # - name: "Run ansible-lint"
-      #   uses: osism/ansible-lint-action@main
-      #   with:
-      #     targets: ${{ steps.get-changed-files.outputs.filesNames }}
+      #  Need to makes this accept list properly
+      - name: "Run ansible-lint"
+        uses: osism/ansible-lint-action@main
+        with:
+          targets: ${{ env.FILENAMES }}
 
       # - name: "Checkout source branch"
       #   id: checkout-scm
@@ -209,5 +209,4 @@ jobs:
     #       const valid_prs = ${{ steps.process-auto-prs.outputs.valid_prs }};
     #       valid_prs.push(...stagingPullRequests);
     #       console.log(valid_prs)
-
 #newPullRequests.push(...additionalPullRequest);
