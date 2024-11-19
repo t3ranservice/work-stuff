@@ -29,7 +29,7 @@ stages:
   - tf-apply
   - tf-destroy
   - ansible
-
+123
 vault-azure-auth:
   stage: azure-auth
   extends: .vault-azure-auth

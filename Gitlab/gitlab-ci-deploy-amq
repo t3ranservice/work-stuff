@@ -23,7 +23,7 @@ https://danylo.teran:${MODULE_REPO_TOKEN}@gitlab.dx1.lseg.com/250469/dss/dss-ter
     - vault-azure-auth
   tags:
   - Refinitiv
-
+123
 image:
   name: hashicorp/terraform:latest
   entrypoint:
