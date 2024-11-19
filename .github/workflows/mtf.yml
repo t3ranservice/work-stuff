@@ -141,17 +141,15 @@ jobs:
       - name: Debug
         run: |
           echo ${{ steps.get-changed-files.outputs.filesNames }}
-          echo "${{ steps.get-changed-files.outputs.filesNames }}"
-          echo '${{ steps.get-changed-files.outputs.filesNames }}'
-          echo $test
+
         env:
           test: ${{ steps.get-changed-files.outputs.filesNames }}
 
       # Need to makes this accept list properly
       - name: "Run ansible-lint"
-        uses: ansible/ansible-lint@main
+        uses: osism/ansible-lint-action@main
         with:
-          args: "${{ steps.get-changed-files.outputs.filesNames }}"
+          targets: "${{ steps.get-changed-files.outputs.filesNames }}"
 
       # - name: "Checkout source branch"
       #   id: checkout-scm
