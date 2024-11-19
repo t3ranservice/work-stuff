@@ -82,5 +82,6 @@ jobs:
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: ${{ github.event.number }}
+              pull_number: ${{ github.event.number }},
+              state: "closed"
             });
