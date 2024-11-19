@@ -17,7 +17,7 @@
     export AA="TES123fdT"
     EOF
    
-
+123
 - name: Set environment varaibles
   shell: source /etc/profile.d/java11.sh
   args:
