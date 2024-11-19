@@ -72,7 +72,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            await octokit.rest.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: ${{ github.event.number }},
