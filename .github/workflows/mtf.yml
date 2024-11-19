@@ -157,9 +157,9 @@ jobs:
 
       #  Need to makes this accept list properly
       - name: "Run ansible-lint"
-        uses: osism/ansible-lint-action@main
+        uses: ansible/ansible-lint@main
         with:
-          targets: ${{ env.FILENAMES }}
+          args: ${{ env.FILENAMES }}
 
       # - name: "Checkout source branch"
       #   id: checkout-scm
