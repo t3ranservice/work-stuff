@@ -75,7 +75,7 @@ jobs:
             await octokit.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ github.event.number }}
+              issue_number: ${{ github.event.number }},
               body: "Pull Request has been closed because it didn't pass tests"
             });
 
