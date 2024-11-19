@@ -66,24 +66,32 @@ jobs:
         with:
           args: ${{ env.FILENAMES }}
 
-      - name: "Close pull request if tests failed"
-        id: close-failed-pr
+      - name: "Send Slack notification (fail)"
+        id: send-fail-message
         if: failure()
-        uses: actions/github-script@v6
-        with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: ${{ github.event.number }},
-              body: "Pull Request has been closed because it didn't pass tests"
-            });
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "test_interaction_channel2"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Test message from GH"
 
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: ${{ github.event.number }},
-              state: "closed"
-            });
+      # Uncomment if logic is desired
+      # - name: "Close pull request if tests failed"
+      #   id: close-failed-pr
+      #   if: failure()
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       await github.rest.issues.createComment({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         issue_number: ${{ github.event.number }},
+      #         body: "Pull Request has been closed because it didn't pass tests"
+      #       });
 
-# We can avoid closing PR and let it rerun
+      #       await github.rest.pulls.update({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         pull_number: ${{ github.event.number }},
+      #         state: "closed"
+      #       });
