@@ -34,10 +34,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log('${{ github.ref }}');
-            console.log('${{ github.head_ref }}');
-            console.log('${{ github.base_ref }}');
-            console.log('${{ github.ref_name }}');
             const filesFullList = await github.rest.pulls.listFiles({
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -50,6 +46,8 @@ jobs:
       - name: "Checkout source branch"
         id: checkout-scm
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: "Test"
         run: ls -la
