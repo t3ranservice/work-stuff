@@ -23,12 +23,26 @@ on:
 concurrency:
   group: ${{ github.workflow }}
 
+# Allow GitHub Actions to create and approve pull requests has to be enabled in repository Settings > Actions > General (bottom line)
+
 jobs:
   auto_merge_master:
     name: "Merge to master automatically"
     runs-on: ubuntu-latest
 
     steps:
+      - name: "Get pull request"
+        id: get-pr
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: "8",
+            });
+            console.log(response);
+
       - name: "Open Pull Request to master"
         id: get-changed-files
         uses: actions/github-script@v6
