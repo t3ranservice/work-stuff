@@ -12,6 +12,7 @@ env:
 
 permissions:
   pull-requests: write
+  contents: write
 
 name: "Merge to master"
 on:
