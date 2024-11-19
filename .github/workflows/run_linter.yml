@@ -34,7 +34,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log("Hello from Source Branch")
+            console.log("Hello from Source Branch2")
 
       - name: "Checkout source branch"
         id: checkout-scm
