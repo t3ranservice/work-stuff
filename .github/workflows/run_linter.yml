@@ -85,3 +85,5 @@ jobs:
               pull_number: ${{ github.event.number }},
               state: "closed"
             });
+
+# We can avoid closing PR and let it rerun
