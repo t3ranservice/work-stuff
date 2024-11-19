@@ -40,7 +40,7 @@ jobs:
             head: "staging",
             base: "main",
             title: "[_AUTO_] - pull-request",
-            body: "Automatic Pull Request to master"
+            body: "Automatic Pull Request to master1"
             });
             console.log(response.data);
 
