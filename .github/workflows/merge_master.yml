@@ -86,7 +86,7 @@ jobs:
               require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
 
               } catch (error) {
-                  require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prCreateStatus=${JSON.stringify(error.status)}\n`);
+                  require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(error.status)}\n`);
                   throw new Error("PR creation failed: " + error.message);
               }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(createPr.status)}\n`);
