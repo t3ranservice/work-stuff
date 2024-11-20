@@ -76,7 +76,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const createPr = octokit.rest.pulls.create({
+            const createPr = github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: "staging",
@@ -85,15 +85,12 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPr=${JSON.stringify(createPr)}\n`);
 
       - name: "Send Slack message about failed PR to master"
-        if: failure()
+        if: steps.open-pr-master.outcome == 'failure'
         id: send-failure-message
-        run: |
-          echo ${{ steps.open-pr-master.conclusion }}
-          echo ${{ steps.open-pr-master.outcome }}
-          echo ${{ steps.send-timeout-message.conclusion }}
-          echo ${{ steps.send-timeout-message.outcome }}
+        uses: rtCamp/action-slack-notify@v2
 
       - name: "Merge PR to master"
+        if: steps.open-pr-master.outcome == 'success'
         id: merge-pr-master
         uses: actions/github-script@v6
         with:
