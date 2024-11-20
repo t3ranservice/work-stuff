@@ -62,28 +62,12 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "test_interaction_channel2"
+          SLACK_CHANNEL: "dteran-test"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_MESSAGE: "Test have failed"
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-
-      # 'Allow GitHub Actions to create and approve pull requests' has to be enabled in repository Settings > Actions > General (most bottom line)
-      - name: "Open Pull Request to master"
-        id: open-master-pr
-        if: success()
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const response = await github.rest.pulls.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            head: "staging",
-            base: "main",
-            title: "[_AUTO_] - pull-request",
-            body: "Automatic Pull Request to master1"
-            });
 
       # Uncomment if logic is desired
       # - name: "Close pull request if tests failed"
@@ -105,3 +89,5 @@ jobs:
       #         pull_number: ${{ github.event.number }},
       #         state: "closed"
       #       });
+
+      # 'Allow GitHub Actions to create and approve pull requests' has to be enabled in repository Settings > Actions > General (most bottom line)

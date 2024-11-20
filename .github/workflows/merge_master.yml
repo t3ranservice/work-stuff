@@ -7,24 +7,69 @@ env:
 
 permissions:
   pull-requests: write
-  contents: write
 
 name: "Merge to master"
 on:
   pull_request:
     branches:
       - main
+  schedule:
+    - cron: "*/5 * * * *"
 
 concurrency:
   group: ${{ github.workflow }}
 
 jobs:
   auto_merge_master:
-    name: "Merge to master automatically"
+    name: "Do an auto-merge to master"
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     steps:
       - name: Fetch and filter pull requests
         id: fetch-prs
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pullRequests = ( await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'closed'
+            })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
+
+            console.log(pullRequests);
+
+      # - name:
+
+      # - name: Process valid pull request to master
+      #   id: process-valid-master-prs
+      #   if: ${{ needs.fetch-prs.outputs.validMasterPrs != '[]' }}
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const prs = ${{ needs.fetch-prs.outputs.validMasterPrs }}
+      #       prs.forEach(pr => {
+      #         github.rest.pulls.merge({
+      #           owner: context.repo.owner,
+      #           repo: context.repo.repo,
+      #           pull_number: pr.number,
+      #           }).then(response => {
+      #             if (response.status === 200) {
+      #               console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been successfuly merged! Status code: ${response.status}`);
+      #             } else {
+      #               console.log(`Couldn't merge ${pr.title}/${pr.number}. Status code: ${response.status}`);
+      #             }
+      #             }).catch(error => {
+      #               console.error(`Failed to close PR ${pr.title}/${pr.number}: `, error.message);
+      #           });
+      #         });
+
+  close_invalid_prs:
+    name: "Close PRs created to master by humans"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Fetch and close manual PRs to master if any
+        id: fetch-and-close-invalid-prs
         uses: actions/github-script@v6
         with:
           script: |
@@ -32,18 +77,24 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
             });
+
             const invalidMasterPrs = pullRequests.filter(pr =>
                 pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `pulls=${JSON.stringify(pullRequests.data)}\n`);
-            console.log("Status code for GET pull requests: " + pullRequests.status)
 
-  # - name: "Send Slack notification (success)"
-  #   id: send-fail-message
-  #   uses: rtCamp/action-slack-notify@v2
-  #   env:
-  #     SLACK_CHANNEL: "test_interaction_channel2"
-  #     SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-  #     SLACK_MESSAGE: "Test have failed"
-  #     SLACK_COLOR: "success"
-  #     SLACK_USERNAME: "borg-sphere"
-  #     SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+            if (invalidMasterPrs.length > 0) {
+              console.log("Close PR")
+            }
+
+      - name: Fetch and filter pull requests
+        id: send-slack-message
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('${{ steps.fetch-and-close-invalid-prs.conclusion }}')
+            console.log('${{ steps.fetch-and-close-invalid-prs.outcome }}')
+
+        #2DO
+      #Send slack message if process-valid-master-prs failed
+      #Send slack message if process-valid-master-prs succeeded
+      #Send slack message if process-invalid-master-prs was not skipped and PR was closed successfuly
+      #Send slack message if process-invalid-master-prs was not skipped but PR was not closed successfuly
