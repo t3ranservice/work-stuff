@@ -102,11 +102,9 @@ jobs:
           SLACK_CHANNEL: "test_interaction_channel2"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_MESSAGE: |
-            "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}"
-            ``` ${{ steps.open-pr-master.outputs.createPrError }} ```
-
+            "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}. Click on Actions URL to view full log"
           SLACK_COLOR: "failure"
-          SLACK_USERNAME: "borg-sphere"
+          SLACK_USERNAME: ""
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           SLACK_MSG_AUTHOR: "migration-tech-framework"
           MSG_MINIMAL: "actions url"
