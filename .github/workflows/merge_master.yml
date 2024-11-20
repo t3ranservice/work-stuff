@@ -52,7 +52,7 @@ jobs:
               const pullRequests = ( await github.rest.pulls.list({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  state: 'closed'
+                  state: 'open'
               })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
 
               if (pullRequests.length === 0) {
