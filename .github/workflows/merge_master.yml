@@ -68,8 +68,10 @@ jobs:
       - name: "Send Slack message about stuck PR to master"
         if: steps.poll-prs.outputs.timeoutExceeded
         id: send-timeout-message
-        uses: rtCamp/action-slack-notify@v2
-
+        run: |
+          echo ${{ steps.poll-prs.outputs.prsExist }}
+          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
+      #uses: rtCamp/action-slack-notify@v2
       - name: "Open PR to master"
         if: steps.poll-prs.outputs.prsExist == 'false'
         id: open-pr-master
