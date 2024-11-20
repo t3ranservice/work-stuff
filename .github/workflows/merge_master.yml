@@ -66,7 +66,7 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
 
       - name: "Send Slack message about stuck PR to master"
-        if: steps.poll-prs.outputs.timeoutExceeded
+        if: steps.poll-prs.outputs.timeoutExceeded == 'true'
         id: send-timeout-message
         run: |
           echo ${{ steps.poll-prs.outputs.prsExist }}
