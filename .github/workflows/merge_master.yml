@@ -81,6 +81,7 @@ jobs:
               repo: context.repo.repo,
               head: "staging",
               base: "main",
+              title: ${{ env.SEARCH_PATTERN }}
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPr=${JSON.stringify(createPr)}\n`);
 
