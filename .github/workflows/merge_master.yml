@@ -69,6 +69,7 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          SLACK_MSG_AUTHOR: "borg"
 
       - name: "Open PR to master"
         id: open-pr-master
@@ -93,7 +94,7 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(createPr.status)}\n`);
 
       # We need double 'if' so it executes only for 'Open PR to master' task and not if previous tasks failed
-      - name: "Send Slack message about failed PR to master"
+      - name: "Send Slack message about failed opening PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message-open
         uses: rtCamp/action-slack-notify@v2
@@ -102,12 +103,14 @@ jobs:
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_MESSAGE: |
             "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}"
-            ```text
+            ```
             ${{ steps.open-pr-master.outputs.createPrError }}
             ```
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          SLACK_MSG_AUTHOR: "borg"
+          MSG_MINIMAL: "actions url"
 
       - name: "Merge PR to master"
         id: merge-pr-master
@@ -165,6 +168,7 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          SLACK_MSG_AUTHOR: "borg"
 
       - name: "Send Slack message about failed merge"
         if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'true'
@@ -177,6 +181,7 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          SLACK_MSG_AUTHOR: "borg"
 
       - name: "Send Slack message about successful merge"
         if: success()
@@ -189,6 +194,7 @@ jobs:
           SLACK_COLOR: "success"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          SLACK_MSG_AUTHOR: "borg"
 
   close_invalid_prs:
     name: "Close PRs created to master by humans"
