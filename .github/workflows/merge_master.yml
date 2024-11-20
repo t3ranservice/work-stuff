@@ -33,8 +33,8 @@ jobs:
             const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
-            let result = { prsExist: true, timeoutExceeded: false }
-            let result3 = '123'
+            let prsExist = true;
+            let timeoutExceeded = false;
 
             console.log("Polling for pull requests...");
 
@@ -45,7 +45,7 @@ jobs:
 
               if (elapsedTime > TIMEOUT) {
                 console.log("Timeout reached without resolving condition.");
-                result = { timeoutExceeded: true, prsExist: true }
+                timeoutExceeded = true
                 break;
               }
 
@@ -57,19 +57,19 @@ jobs:
 
               if (pullRequests.length === 0) {
                 console.log("No open pull requests found. Exiting loop.");
-                result = { prsExist: false, timeoutExceeded: false }
+                prsExist = false
                 break;
               }
 
               await new Promise(resolve => setTimeout(resolve, INTERVAL));      
             }
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `result2=${JSON.stringify(result)}\n`);
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `result3=${JSON.stringify(result3)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prsExist=${JSON.stringify(prsExist)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
 
       - name: "Test"
         run: |
-          echo ${{ steps.poll-prs.outputs.result2.prsExist }}
-          echo ${{ steps.poll-prs.outputs.result3 }}
+          echo ${{ steps.poll-prs.outputs.prsExist }}
+          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
 
       # - name:
 
