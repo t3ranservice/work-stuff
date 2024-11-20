@@ -87,7 +87,8 @@ jobs:
       - name: "Send Slack message about failed PR to master"
         if: steps.open-pr-master.outcome == 'failure'
         id: send-failure-message
-        uses: rtCamp/action-slack-notify@v2
+        run: |
+          echo ${{ steps.open-pr-master.outcome }}
 
       - name: "Merge PR to master"
         if: steps.open-pr-master.outcome == 'success'
