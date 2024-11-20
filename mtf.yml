@@ -1,9 +1,9 @@
 # We set initial value to string for empty lists because there is no list data structure in GitHub Actions
-e1nv:
-  second_msg: ${{ false }}
+env:
+  second_msg: ${{ true }}
   github_base_url: "https://github.com"
   github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
-  slack_channel: "borg_github_internal"
+  slack_channel: "test_channel"
   slack_token_id: "slack_borg_github_internal"
   SEARCH_PATTERN: "[_AUTO_] - pull-request"
   MASTER_BRANCH_NAME: "main"
