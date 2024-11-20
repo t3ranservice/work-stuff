@@ -83,8 +83,8 @@ jobs:
                 base: "master",
                 title: '${{ env.SEARCH_PATTERN }}',
               });
-              require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
               } catch (error) {
+                  require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
                   require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(createPr.status)}\n`);
                   throw new Error("PR creation failed: " + error.message);
               }
