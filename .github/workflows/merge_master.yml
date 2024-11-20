@@ -68,7 +68,7 @@ jobs:
 
       - name: "Test"
         run: |
-          echo ${{ steps.poll-prs.outputs.result2 }}
+          echo ${{ steps.poll-prs.outputs.result2.prsExist }}
           echo ${{ steps.poll-prs.outputs.result3 }}
 
       # - name:
