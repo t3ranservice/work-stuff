@@ -68,10 +68,8 @@ jobs:
       - name: "Send Slack message about stuck PR to master"
         if: steps.poll-prs.outputs.timeoutExceeded == 'true'
         id: send-timeout-message
-        run: |
-          echo ${{ steps.poll-prs.outputs.prsExist }}
-          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
-      #uses: rtCamp/action-slack-notify@v2
+        uses: rtCamp/action-slack-notify@v2
+
       - name: "Open PR to master"
         if: steps.poll-prs.outputs.prsExist == 'false'
         id: open-pr-master
@@ -89,7 +87,11 @@ jobs:
       - name: "Send Slack message about failed PR to master"
         if: failure()
         id: send-failure-message
-        uses: rtCamp/action-slack-notify@v2
+        run: |
+          echo ${{ steps.open-pr-master.conclusion }}
+          echo ${{ steps.open-pr-master.outcome }}
+          echo ${{ steps.send-timeout-message.conclusion }}
+          echo ${{ steps.send-timeout-message.outcome }}
 
       - name: "Merge PR to master"
         id: merge-pr-master
