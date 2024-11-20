@@ -86,13 +86,14 @@ jobs:
               require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
 
               } catch (error) {
-                  console.log(error.status)
+                  require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prCreateStatus=${JSON.stringify(error.status)}\n`);
                   throw new Error("PR creation failed: " + error.message);
               }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(createPr.status)}\n`);
 
       # We need double 'if' so it executes only for 'Open PR to master' task and not if previous tasks failed
       - name: "Send Slack message about failed PR to master"
+        if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message-open
         uses: rtCamp/action-slack-notify@v2
         env:
