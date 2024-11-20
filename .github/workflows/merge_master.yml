@@ -83,7 +83,6 @@ jobs:
               base: "main",
               title: '${{ env.SEARCH_PATTERN }}',
             });
-            console.log(createPr.data)
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
 
       - name: "Send Slack message about failed PR to master"
@@ -97,7 +96,20 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log(${{ steps.open-pr-master.outputs.prNumber }})
+            const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
+            const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
+            const START_TIME = Date.now();
+            let isMergable = false
+
+            console.log("Polling for pull requests...");
+
+            const response = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
+            });
+
+            console.log(response.data)
 
       # - name:
 
