@@ -103,7 +103,7 @@ jobs:
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_MESSAGE: |
             "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}"
-            ``` ${{ steps.open-pr-master.outputs.createPrError }}
+            ``` ${{ steps.open-pr-master.outputs.createPrError }} ```
 
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
