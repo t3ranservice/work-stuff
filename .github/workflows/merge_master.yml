@@ -83,21 +83,29 @@ jobs:
               base: "main",
               title: '${{ env.SEARCH_PATTERN }}',
             });
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPr=${JSON.stringify(createPr)}\n`);
-            console.log('${{ steps.open-pr-master.outputs.createPr.data }}')
 
       - name: "Send Slack message about failed PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message
-        run: |
-          echo ${{ steps.open-pr-master.outcome }}
+        uses: rtCamp/action-slack-notify@v2
 
       - name: "Merge PR to master"
+        if: steps.open-pr-master.outcome == 'success'
         id: merge-pr-master
-        run: |
-          echo $test123
-        env:
-          test123: ${{ steps.open-pr-master.outputs.createPr.data }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+            const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
+            const START_TIME = Date.now();
+
+            const pullRequests = ( await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open'
+            })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
+
+            console.log(pullRequests.data)
 
       # - name:
 
