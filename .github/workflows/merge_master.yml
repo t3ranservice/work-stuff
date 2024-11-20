@@ -34,6 +34,7 @@ jobs:
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
             let result = { prsExist: true, timeoutExceeded: false }
+            let result3 = '123'
 
             console.log("Polling for pull requests...");
 
@@ -62,12 +63,13 @@ jobs:
 
               await new Promise(resolve => setTimeout(resolve, INTERVAL));      
             }
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `result=${JSON.stringify(result)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `result2=${JSON.stringify(result)}\n`);
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `result3=${JSON.stringify(result3)}\n`);
 
       - name: "Test"
         run: |
-          echo ${{ steps.poll-prs.outputs.result }}
-          echo ${{ steps.poll-prs.outputs.result.prsExist }}
+          echo ${{ steps.poll-prs.outputs.result2 }}
+          echo ${{ steps.poll-prs.outputs.result3 }}
 
       # - name:
 
