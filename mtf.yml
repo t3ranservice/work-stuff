@@ -1,5 +1,5 @@
 # We set initial value to string for empty lists because there is no list data structure in GitHub Actions
-env:
+e1nv:
   second_msg: ${{ false }}
   github_base_url: "https://github.com"
   github_api_url: "https://api.github.com/repos/gdcorp-engineering/migration-tech-framework"
