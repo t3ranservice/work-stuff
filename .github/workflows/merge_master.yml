@@ -104,9 +104,9 @@ jobs:
           SLACK_MESSAGE: |
             "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}. Click on Actions URL to view full log"
           SLACK_COLOR: "failure"
-          SLACK_USERNAME: ""
+          SLACK_USERNAME: "borg"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          SLACK_MSG_AUTHOR: "migration-tech-framework"
+          SLACK_MSG_AUTHOR: ""
           MSG_MINIMAL: "actions url"
 
       - name: "Merge PR to master"
