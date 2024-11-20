@@ -10,9 +10,9 @@ permissions:
 
 name: "Merge to master"
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - staging
   schedule:
     - cron: "*/5 * * * *"
 
@@ -35,7 +35,11 @@ jobs:
                 repo: context.repo.repo,
                 state: 'closed'
             })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
+            const existingMasterPrs = ${{ steps.fetch-prs.outputs.pulls }}.filter(pr =>
+              pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
 
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `existingMasterPrs=${JSON.stringify(existingMasterPrs)}\n`);
+            console.log("Status code for GET pull requests: " + pullRequests.status)
             console.log(pullRequests);
 
       # - name:
