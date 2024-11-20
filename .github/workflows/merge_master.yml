@@ -67,8 +67,15 @@ jobs:
 
       - name: "Send Slack message about stuck PR to master"
         if: steps.poll-prs.outputs.timeoutExceeded == 'true'
-        id: send-timeout-message
+        id: send-timeout-message-stuck
         uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "dteran-test"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Could not open PR to master because there is other PR stuck!"
+          SLACK_COLOR: "failure"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
 
       - name: "Open PR to master"
         if: steps.poll-prs.outputs.prsExist == 'false'
@@ -87,8 +94,15 @@ jobs:
 
       - name: "Send Slack message about failed PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
-        id: send-failure-message
+        id: send-failure-message-open
         uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "dteran-test"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Could not open a PR to master, please check the issue."
+          SLACK_COLOR: "failure"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
 
       - name: "Merge PR to master"
         if: steps.open-pr-master.outcome == 'success'
@@ -96,45 +110,82 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
+            const TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
-            let isMergable = false
+            let isMergeable = false
+            let timeoutExceeded = false
 
-            console.log("Polling for pull requests...");
+            console.log("Waiting for PR to become mergeable...");
 
-            const response = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
-            });
+            while (true) {
 
-            console.log(response.data)
+              const elapsedTime = Date.now() - START_TIME;
 
-      # - name:
+              if (elapsedTime > TIMEOUT) {
+                console.log("Timeout reached while waiting for PR to become mergeable");
+                timeoutExceeded = true
+                break;
+              }
 
-      # - name: Process valid pull request to master
-      #   id: process-valid-master-prs
-      #   if: ${{ needs.fetch-prs.outputs.validMasterPrs != '[]' }}
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const prs = ${{ needs.fetch-prs.outputs.validMasterPrs }}
-      #       prs.forEach(pr => {
-      #         github.rest.pulls.merge({
-      #           owner: context.repo.owner,
-      #           repo: context.repo.repo,
-      #           pull_number: pr.number,
-      #           }).then(response => {
-      #             if (response.status === 200) {
-      #               console.log(`Pull request ${pr.title}/${pr.number} to branch ${{ env.MASTER_BRANCH_NAME }} has been successfuly merged! Status code: ${response.status}`);
-      #             } else {
-      #               console.log(`Couldn't merge ${pr.title}/${pr.number}. Status code: ${response.status}`);
-      #             }
-      #             }).catch(error => {
-      #               console.error(`Failed to close PR ${pr.title}/${pr.number}: `, error.message);
-      #           });
-      #         });
+              const response = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
+              });
+
+              if (pullRequests.length === 0) {
+                console.log("PR is mergeable. We can proceed further.");
+                isMergeable = true
+                break;
+              }
+              await new Promise(resolve => setTimeout(resolve, INTERVAL));      
+            }
+
+            if (isMergeable === true) {
+              const mergePr = await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: '${{ steps.open-pr-master.outputs.prNumber }}',
+                })
+            }
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
+
+      - name: "Send Slack message about timeout waiting for PR to become mergeable"
+        if: steps.merge-pr-master.outputs.timeoutExceeded == 'true'
+        id: send-failure-message-timeout
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "dteran-test"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Workflow failed while waiting for PR to become mergeable, please check the issue"
+          SLACK_COLOR: "failure"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+
+      - name: "Send Slack message about failed merge"
+        if: failure() && steps.merge-pr-master.outcome != 'skipped'
+        id: send-failure-message
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "dteran-test"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Auto merge to master has failed, please check the logs."
+          SLACK_COLOR: "failure"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+
+      - name: "Send Slack message about successful merge"
+        if: success()
+        id: send-success-message
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "dteran-test"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "PR to master has been successfuly merged"
+          SLACK_COLOR: "success"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
 
   close_invalid_prs:
     name: "Close PRs created to master by humans"
@@ -165,9 +216,4 @@ jobs:
           script: |
             console.log('${{ steps.fetch-and-close-invalid-prs.conclusion }}')
             console.log('${{ steps.fetch-and-close-invalid-prs.outcome }}')
-
-        #2DO
-      #Send slack message if process-valid-master-prs failed
-      #Send slack message if process-valid-master-prs succeeded
-      #Send slack message if process-invalid-master-prs was not skipped and PR was closed successfuly
-      #Send slack message if process-invalid-master-prs was not skipped but PR was not closed successfuly
+            // Send Slack message here
