@@ -103,7 +103,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   state: 'open'
-            })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
+            });
 
             console.log(pullRequests)
 
