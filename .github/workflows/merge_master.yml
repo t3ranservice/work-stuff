@@ -33,7 +33,7 @@ jobs:
             const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
-            let result = { prsExist: true, timeoutExceeded = false }
+            let result = { prsExist: true, timeoutExceeded: false }
 
             console.log("Polling for pull requests...");
 
