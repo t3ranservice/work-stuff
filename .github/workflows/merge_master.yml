@@ -75,15 +75,19 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const createPr = await github.rest.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head: "staging",
-              base: "master",
-              title: '${{ env.SEARCH_PATTERN }}',
-            });
-            console.log(createPr.status)
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
+            try {
+              const createPr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: "staging",
+                base: "master",
+                title: '${{ env.SEARCH_PATTERN }}',
+              });
+              require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
+              } catch (error) {
+                  require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(createPr.status)}\n`);
+                  throw new Error("PR creation failed: " + error.message);
+              }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPrStatus=${JSON.stringify(createPr.status)}\n`);
 
       # We need double 'if' so it executes only for 'Open PR to master' task and not if previous tasks failed
