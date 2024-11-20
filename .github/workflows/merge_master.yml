@@ -69,7 +69,7 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          SLACK_MSG_AUTHOR: "borg"
+          MSG_MINIMAL: "actions url"
 
       - name: "Open PR to master"
         id: open-pr-master
@@ -101,12 +101,10 @@ jobs:
         env:
           SLACK_CHANNEL: "test_interaction_channel2"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_MESSAGE: |
-            "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}. Click on Actions URL to view full log"
+          SLACK_MESSAGE: "Could not open a PR to master, status code: ${{ steps.open-pr-master.outputs.createPrStatus }}. Click on Actions URL to view full log"
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          SLACK_MSG_AUTHOR: ""
           MSG_MINIMAL: "actions url"
 
       - name: "Merge PR to master"
@@ -165,7 +163,7 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          SLACK_MSG_AUTHOR: "borg"
+          MSG_MINIMAL: "actions url"
 
       - name: "Send Slack message about failed merge"
         if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'true'
@@ -178,7 +176,7 @@ jobs:
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          SLACK_MSG_AUTHOR: "borg"
+          MSG_MINIMAL: "actions url"
 
       - name: "Send Slack message about successful merge"
         if: success()
@@ -191,7 +189,7 @@ jobs:
           SLACK_COLOR: "success"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          SLACK_MSG_AUTHOR: "borg"
+          MSG_MINIMAL: "actions url"
 
   close_invalid_prs:
     name: "Close PRs created to master by humans"
