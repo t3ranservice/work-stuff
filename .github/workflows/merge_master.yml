@@ -60,13 +60,19 @@ jobs:
                 prsExist = false
                 break;
               }
-
               await new Promise(resolve => setTimeout(resolve, INTERVAL));      
             }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prsExist=${JSON.stringify(prsExist)}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
 
-      - name: "Test"
+      - name: "Run if timeout"
+        if: steps.poll-prs.outputs.timeoutExceeded
+        run: |
+          echo ${{ steps.poll-prs.outputs.prsExist }}
+          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
+
+      - name: "Don't run"
+        if: steps.poll-prs.outputs.prsExist == 'false'
         run: |
           echo ${{ steps.poll-prs.outputs.prsExist }}
           echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
