@@ -81,7 +81,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 head: "staging",
-                base: "master",
+                base: "main",
                 title: '${{ env.SEARCH_PATTERN }}',
               });
               require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
