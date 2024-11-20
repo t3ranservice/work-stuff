@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
+      # First poll if any auto PRs to master exist and wait for them to close automatically (edge case)
       - name: Check if any auto pull requests to master exist
         id: poll-prs
         uses: actions/github-script@v6
@@ -33,20 +34,15 @@ jobs:
             const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
-            let prsExist = true;
-            let timeoutExceeded = false;
 
             console.log("Polling for pull requests...");
 
             while (true) {
-
               const elapsedTime = Date.now() - START_TIME;
-
 
               if (elapsedTime > TIMEOUT) {
                 console.log("Timeout reached while waiting for another PR to get closed");
-                timeoutExceeded = true
-                break;
+                throw new Error("Timeout reached while waiting for another PR to get closed");
               }
 
               const pullRequests = ( await github.rest.pulls.list({
@@ -57,20 +53,18 @@ jobs:
 
               if (pullRequests.length === 0) {
                 console.log("No open pull requests found. We can proceed further");
-                prsExist = false
                 break;
               }
               await new Promise(resolve => setTimeout(resolve, INTERVAL));      
             }
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prsExist=${JSON.stringify(prsExist)}\n`);
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
 
       - name: "Send Slack message about stuck PR to master"
-        if: steps.poll-prs.outputs.timeoutExceeded == 'true'
+        if: failure() && steps.poll-prs.outcome != 'skipped'
         id: send-timeout-message-stuck
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "dteran-test"
+          SLACK_CHANNEL: "test_interaction_channel2"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_MESSAGE: "Could not open PR to master because there is other PR stuck!"
           SLACK_COLOR: "failure"
@@ -78,7 +72,6 @@ jobs:
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
 
       - name: "Open PR to master"
-        if: steps.poll-prs.outputs.prsExist == 'false'
         id: open-pr-master
         uses: actions/github-script@v6
         with:
@@ -92,12 +85,13 @@ jobs:
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
 
+      # We need double if so it executes only for 'Open PR to master' task and not if previous tasks failed
       - name: "Send Slack message about failed PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message-open
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "dteran-test"
+          SLACK_CHANNEL: "test_interaction_channel2"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_MESSAGE: "Could not open a PR to master, please check the issue."
           SLACK_COLOR: "failure"
@@ -105,7 +99,6 @@ jobs:
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
 
       - name: "Merge PR to master"
-        if: steps.open-pr-master.outcome == 'success'
         id: merge-pr-master
         uses: actions/github-script@v6
         with:
@@ -114,7 +107,6 @@ jobs:
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
             let isMergeable = false
-            let timeoutExceeded = false
 
             console.log("Waiting for PR to become mergeable...");
 
@@ -124,8 +116,7 @@ jobs:
 
               if (elapsedTime > TIMEOUT) {
                 console.log("Timeout reached while waiting for PR to become mergeable");
-                timeoutExceeded = true
-                break;
+                throw new Error("Timeout reached while waiting for PR to become mergeable");
               }
 
               const response = await github.rest.pulls.get({
@@ -142,6 +133,8 @@ jobs:
               await new Promise(resolve => setTimeout(resolve, INTERVAL));      
             }
 
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `isMergeable=${JSON.stringify(isMergeable)}\n`);
+
             if (isMergeable === true) {
               const mergePr = await github.rest.pulls.merge({
                 owner: context.repo.owner,
@@ -149,10 +142,9 @@ jobs:
                 pull_number: '${{ steps.open-pr-master.outputs.prNumber }}',
                 })
             }
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
 
       - name: "Send Slack message about timeout waiting for PR to become mergeable"
-        if: steps.merge-pr-master.outputs.timeoutExceeded == 'true'
+        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'false'
         id: send-failure-message-timeout
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -164,7 +156,7 @@ jobs:
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
 
       - name: "Send Slack message about failed merge"
-        if: failure() && steps.merge-pr-master.outcome != 'skipped'
+        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'true'
         id: send-failure-message
         uses: rtCamp/action-slack-notify@v2
         env:
