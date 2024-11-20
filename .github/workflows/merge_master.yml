@@ -85,6 +85,7 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPr=${JSON.stringify(createPr)}\n`);
 
       - name: "Send Slack message about failed PR to master"
+        if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message
         run: |
           echo ${{ steps.open-pr-master.outcome }}
