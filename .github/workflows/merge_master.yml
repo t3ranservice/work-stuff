@@ -84,6 +84,7 @@ jobs:
               title: '${{ env.SEARCH_PATTERN }}',
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPr=${JSON.stringify(createPr)}\n`);
+            console.log('${{ steps.open-pr-master.outputs.createPr.data }}')
 
       - name: "Send Slack message about failed PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
@@ -92,7 +93,6 @@ jobs:
           echo ${{ steps.open-pr-master.outcome }}
 
       - name: "Merge PR to master"
-        if: steps.open-pr-master.outcome == 'success'
         id: merge-pr-master
         run: |
           echo $test123
