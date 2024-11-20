@@ -31,7 +31,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
+            const TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
 
@@ -66,7 +66,7 @@ jobs:
         env:
           SLACK_CHANNEL: "test_interaction_channel2"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_MESSAGE: "Could not open PR to master because there is other PR stuck!"
+          SLACK_MESSAGE: "Could not open PR to master because there is other PR stuck, not closing it for investigation"
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
@@ -80,12 +80,12 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: "staging",
-              base: "main",
+              base: "master",
               title: '${{ env.SEARCH_PATTERN }}',
             });
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prNumber=${JSON.stringify(createPr.data.number)}\n`);
 
-      # We need double if so it executes only for 'Open PR to master' task and not if previous tasks failed
+      # We need double 'if' so it executes only for 'Open PR to master' task and not if previous tasks failed
       - name: "Send Slack message about failed PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message-open
