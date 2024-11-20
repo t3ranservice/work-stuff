@@ -76,7 +76,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const createPr = github.rest.pulls.create({
+            const createPr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: "staging",
