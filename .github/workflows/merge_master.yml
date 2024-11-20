@@ -129,7 +129,7 @@ jobs:
                 throw new Error("Timeout reached while waiting for PR to become mergeable");
               }
 
-              const response = await github.rest.pulls.get({
+              const pullRequests = await github.rest.pulls.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
