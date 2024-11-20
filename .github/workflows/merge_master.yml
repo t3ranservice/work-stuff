@@ -26,17 +26,46 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - name: Fetch and filter pull requests
-        id: fetch-prs
+        id: poll-prs
         uses: actions/github-script@v6
         with:
           script: |
-            const pullRequests = ( await github.rest.pulls.list({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: 'closed'
-            })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
+            const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
+            const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
+            const START_TIME = Date.now();
 
-            console.log(pullRequests);
+            console.log("Polling for pull requests...");
+
+            while (true) {
+
+              const elapsedTime = Date.now() - START_TIME;
+
+              if (elapsedTime > TIMEOUT) {
+                console.log("Timeout reached without resolving condition.");
+                return { prsExist: true, timeoutExceeded: true };
+              }
+
+              const pullRequests = ( await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'closed'
+              })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
+
+              if (pullRequests.length === 0) {
+                console.log("No open pull requests found. Exiting loop.");
+                return { prsExist: false };
+              }
+
+              await new Promise(resolve => setTimeout(resolve, INTERVAL));
+
+            }
+
+            result-encoding: json
+
+      - name: "Test"
+        run: |
+          echo ${{ steps.poll-prs.outputs.prsExist }}
+          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
 
       # - name:
 
