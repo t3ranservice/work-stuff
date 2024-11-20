@@ -60,8 +60,6 @@ jobs:
 
             }
 
-            result-encoding: json
-
       - name: "Test"
         run: |
           echo ${{ steps.poll-prs.outputs.prsExist }}
