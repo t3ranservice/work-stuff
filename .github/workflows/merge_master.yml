@@ -94,10 +94,10 @@ jobs:
       - name: "Merge PR to master"
         if: steps.open-pr-master.outcome == 'success'
         id: merge-pr-master
-        uses: actions/github-script@v6
-        with:
-          script: |
-            console.log('${{ steps.open-pr-master.outputs.createPr.data }}')
+        run: |
+          echo $test123
+        env:
+          test123: ${{ steps.open-pr-master.outputs.createPr.data }}
 
       # - name:
 
