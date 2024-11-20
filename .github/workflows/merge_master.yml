@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
-      - name: Fetch and filter pull requests
+      - name: Check if any auto pull requests to master exist
         id: poll-prs
         uses: actions/github-script@v6
         with:
@@ -44,7 +44,7 @@ jobs:
 
 
               if (elapsedTime > TIMEOUT) {
-                console.log("Timeout reached without resolving condition.");
+                console.log("Timeout reached while waiting for another PR to get closed");
                 timeoutExceeded = true
                 break;
               }
@@ -56,7 +56,7 @@ jobs:
               })).data.filter(pr => pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && pr.title.includes('${{ env.SEARCH_PATTERN }}'))
 
               if (pullRequests.length === 0) {
-                console.log("No open pull requests found. Exiting loop.");
+                console.log("No open pull requests found. We can proceed further");
                 prsExist = false
                 break;
               }
@@ -65,17 +65,36 @@ jobs:
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `prsExist=${JSON.stringify(prsExist)}\n`);
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `timeoutExceeded=${JSON.stringify(timeoutExceeded)}\n`);
 
-      - name: "Run if timeout"
+      - name: "Send Slack message about stuck PR to master"
         if: steps.poll-prs.outputs.timeoutExceeded
-        run: |
-          echo ${{ steps.poll-prs.outputs.prsExist }}
-          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
+        id: send-timeout-message
+        uses: rtCamp/action-slack-notify@v2
 
-      - name: "Don't run"
+      - name: "Open PR to master"
         if: steps.poll-prs.outputs.prsExist == 'false'
-        run: |
-          echo ${{ steps.poll-prs.outputs.prsExist }}
-          echo ${{ steps.poll-prs.outputs.timeoutExceeded }}
+        id: open-pr-master
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const createPr = octokit.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: "staging",
+              base: "master",
+            });
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `createPr=${JSON.stringify(createPr)}\n`);
+
+      - name: "Send Slack message about failed PR to master"
+        if: failure()
+        id: send-failure-message
+        uses: rtCamp/action-slack-notify@v2
+
+      - name: "Merge PR to master"
+        id: merge-pr-master
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log('${{ steps.open-pr-master.outputs.createPr }}')
 
       # - name:
 
