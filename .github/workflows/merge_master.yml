@@ -136,6 +136,12 @@ jobs:
                 pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
               });
               console.log(pullRequests);
+              console.log(pullRequests);
+              console.log(pullRequests === true);
+              console.log(pullRequests === 'true');
+              console.log(pullRequests == true);
+              console.log(pullRequests == 'true');
+              
 
               if (pullRequests.data.mergeable === 'true') {
                 console.log("PR is mergeable. We can proceed further.");
