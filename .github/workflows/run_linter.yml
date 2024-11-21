@@ -62,9 +62,9 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "dteran-test"
+          SLACK_CHANNEL: "test_interaction_channel2"
           SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_MESSAGE: "Test have failed"
+          SLACK_MESSAGE: "Ansible-lint has failed! Click Actions URL to see full log."
           SLACK_COLOR: "failure"
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
