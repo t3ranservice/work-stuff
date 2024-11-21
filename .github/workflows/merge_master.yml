@@ -130,14 +130,14 @@ jobs:
                   throw new Error("Timeout reached while waiting for PR to become mergeable");
                 }
 
-                const pullRequests = await github.rest.pulls.get({
+                const pullRequest = await github.rest.pulls.get({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
                 });
                 
 
-                if (pullRequests.data.mergeable === true) {
+                if (pullRequest.data.mergeable === true) {
                   console.log("PR is mergeable. We can proceed further.");
                   isMergeable = true
                   break;
@@ -216,7 +216,7 @@ jobs:
                 repo: context.repo.repo,
             });
 
-            const invalidMasterPrs = pullRequests.filter(pr =>
+            const invalidMasterPrs = pullRequests.data.filter(pr =>
                 pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
 
             if (invalidMasterPrs.length > 0) {
