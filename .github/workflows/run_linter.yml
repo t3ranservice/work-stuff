@@ -3,7 +3,7 @@
 permissions:
   pull-requests: write
 
-name: "Ansible Lint"
+name: "ansible-lint"
 on:
   pull_request_target:
     branches:
@@ -42,7 +42,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       # Otherwise linter accept list of files as a single string filename
-      - name: "Remove trailing and leading quotes"
+      - name: "Remove trailing and leading quotes from list of changed files"
         id: format-filenames
         run: |
           FILENAMES=${{ steps.get-changed-files.outputs.filesNames }}

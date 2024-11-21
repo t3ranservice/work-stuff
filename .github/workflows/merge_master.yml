@@ -9,13 +9,13 @@ permissions:
   pull-requests: write
   contents: write
 
-name: "Merge to master"
+name: "Handle merge to master"
 on:
   push:
     branches:
       - staging
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 1 * * *"
 
 concurrency:
   group: ${{ github.workflow }}
@@ -94,7 +94,7 @@ jobs:
                   throw new Error("PR creation failed: " + error);
               }
 
-      # We need double 'if' so it executes only for 'Open PR to master' task and not if previous tasks failed
+      # We need double 'if' so it executes only for fail of 'Open PR to master' task and not if previous tasks failed
       - name: "Send Slack message about failed opening PR to master"
         if: failure() && steps.open-pr-master.outcome != 'skipped'
         id: send-failure-message-open
@@ -237,7 +237,7 @@ jobs:
 
             require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidPrExists=${JSON.stringify(invalidPrExists)}\n`);
 
-      - name: Fetch and filter pull requests
+      - name: Send Slack message about closed PR to master
         id: send-slack-message-invalid-pr
         if: steps.fetch-and-close-invalid-prs.outputs.invalidPrExists == 'true'
         uses: rtCamp/action-slack-notify@v2
@@ -251,7 +251,7 @@ jobs:
           MSG_MINIMAL: "actions url"
           SLACK_FOOTER: "Powered by Dominion"
 
-      - name: Fetch and filter pull requests
+      - name: Send Slack message about failing closing PR to master
         id: send-slack-message
         if: failure()
         uses: rtCamp/action-slack-notify@v2
