@@ -137,10 +137,10 @@ jobs:
               });
               console.log(pullRequests);
               console.log(pullRequests.data.mergeable);
-              console.log(pullRequests === true);
-              console.log(pullRequests === 'true');
-              console.log(pullRequests == true);
-              console.log(pullRequests == 'true');
+              console.log(pullRequests.data.mergeable === true);
+              console.log(pullRequests.data.mergeable === 'true');
+              console.log(pullRequests.data.mergeable == true);
+              console.log(pullRequests.data.mergeable == 'true');
               
 
               if (pullRequests.data.mergeable === 'true') {
