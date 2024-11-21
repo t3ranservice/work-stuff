@@ -225,17 +225,6 @@ jobs:
             const invalidMasterPrs = pullRequests.data.filter(pr =>
                 pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
 
-            try {
-              console.log("Start TRY --------")
-              console.log(invalidMasterPrs)
-              console.log(invalidMasterPrs.data.number)
-              console.log("END TRY -------")
-            }
-              catch {
-                console.log("START CATCH -------")
-                console.log(invalidMasterPrs[0].number)
-              }
-
             if (invalidMasterPrs.length > 0) {
               invalidPrExists = true;
               github.rest.pulls.update({
