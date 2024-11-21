@@ -113,39 +113,43 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const TIMEOUT = 0.8 * 60 * 1000; // 5 minutes in milliseconds
+            const TIMEOUT = 0.5 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
             let isMergeable = false
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `isMergeable=${JSON.stringify(isMergeable)}\n`);
 
             console.log("Waiting for PR to become mergeable...");
+            try {
+              while (true) {
 
-            while (true) {
+                const elapsedTime = Date.now() - START_TIME;
 
-              const elapsedTime = Date.now() - START_TIME;
+                if (elapsedTime > TIMEOUT) {
+                  console.log("Timeout reached while waiting for PR to become mergeable");
+                  throw new Error("Timeout reached while waiting for PR to become mergeable");
+                }
 
-              if (elapsedTime > TIMEOUT) {
-                console.log("Timeout reached while waiting for PR to become mergeable");
-                throw new Error("Timeout reached while waiting for PR to become mergeable");
-              }
+                const pullRequests = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
+                });
+                
 
-              const pullRequests = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
-              });
-              
+                if (pullRequests.data.mergeable === 'true') {
+                  console.log("PR is mergeable. We can proceed further.");
+                  isMergeable = true
+                  break;
+                }
+                await new Promise(resolve => setTimeout(resolve, INTERVAL));      
+              }            
+              require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `isMergeable=${JSON.stringify(isMergeable)}\n`);
 
-              if (pullRequests.data.mergeable === 'true') {
-                console.log("PR is mergeable. We can proceed further.");
-                isMergeable = true
-                break;
-              }
-              await new Promise(resolve => setTimeout(resolve, INTERVAL));      
-            }
-
-            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `isMergeable=${JSON.stringify(isMergeable)}\n`);
+            } catch (error) {
+                  require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `isMergeable=${JSON.stringify(isMergeable)}\n`);
+                  console.log(error)
+                  throw new Error("Waiting for PR become mergeable failed: " + error);
+             }
 
             if (isMergeable === true) {
               const mergePr = await github.rest.pulls.merge({
