@@ -211,6 +211,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            let invalidPrExists = false;
             const pullRequests = await github.rest.pulls.list({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -220,14 +221,39 @@ jobs:
                 pr.base.ref === '${{ env.MASTER_BRANCH_NAME }}' && !pr.title.includes('${{ env.SEARCH_PATTERN }}'));
 
             if (invalidMasterPrs.length > 0) {
-              console.log("Close PR")
+              invalidPrExists = true;
+              github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: invalidMasterPrs.data[0].number,
+                state: 'closed'
+              });
             }
+
+            require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `invalidPrExists=${JSON.stringify(invalidPrExists)}\n`);
+
+      - name: Fetch and filter pull requests
+        id: send-slack-message-invalid-pr
+        if: steps.fetch-and-close-invalid-prs.outputs.invalidPrExists == 'true'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "test_interaction_channel2"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Humans are not allowed to open PRs to master! Closing..."
+          SLACK_COLOR: "failure"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          MSG_MINIMAL: "actions url"
 
       - name: Fetch and filter pull requests
         id: send-slack-message
-        uses: actions/github-script@v6
-        with:
-          script: |
-            console.log('${{ steps.fetch-and-close-invalid-prs.conclusion }}')
-            console.log('${{ steps.fetch-and-close-invalid-prs.outcome }}')
-            // Send Slack message here
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "test_interaction_channel2"
+          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_MESSAGE: "Something went wrong while closing invalid PR to master"
+          SLACK_COLOR: "failure"
+          SLACK_USERNAME: "borg-sphere"
+          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
+          MSG_MINIMAL: "actions url"
