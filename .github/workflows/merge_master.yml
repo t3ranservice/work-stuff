@@ -71,6 +71,7 @@ jobs:
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
 
       - name: "Open PR to master"
         id: open-pr-master
@@ -108,6 +109,7 @@ jobs:
           SLACK_USERNAME: "borg"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
 
       - name: "Merge PR to master"
         id: merge-pr-master
@@ -174,6 +176,7 @@ jobs:
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
 
       - name: "Send Slack message about failed merge"
         if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'true'
@@ -187,6 +190,7 @@ jobs:
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
 
       - name: "Send Slack message about successful merge"
         if: success()
@@ -200,6 +204,7 @@ jobs:
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
 
   close_invalid_prs:
     name: "Close PRs created to master by humans"
@@ -244,6 +249,7 @@ jobs:
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
 
       - name: Fetch and filter pull requests
         id: send-slack-message
@@ -257,3 +263,4 @@ jobs:
           SLACK_USERNAME: "borg-sphere"
           SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
           MSG_MINIMAL: "actions url"
+          SLACK_FOOTER: "Powered by Dominion"
