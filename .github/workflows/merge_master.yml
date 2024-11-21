@@ -233,7 +233,7 @@ jobs:
             }
               catch {
                 console.log("START CATCH -------")
-                console.log(invalidMasterPrs[0])
+                console.log(invalidMasterPrs[0].number)
               }
 
             if (invalidMasterPrs.length > 0) {
@@ -241,7 +241,7 @@ jobs:
               github.rest.pulls.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_number: invalidMasterPrs.data[0].number,
+                pull_number: invalidMasterPrs[0].number,
                 state: 'closed'
               });
             }
