@@ -148,7 +148,7 @@ jobs:
             } catch (error) {
                   require('fs').appendFileSync(process.env.GITHUB_OUTPUT, `isMergeable=${JSON.stringify(isMergeable)}\n`);
                   console.log(error)
-                  console.log('IN CATCH')
+                  console.log('IN CATCH IN CATCH IN CATCH')
                   console.log(isMergeable)
                   throw new Error("Waiting for PR become mergeable failed: " + error);
              }
