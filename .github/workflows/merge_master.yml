@@ -137,7 +137,7 @@ jobs:
                 });
                 
 
-                if (pullRequests.data.mergeable === 'true') {
+                if (pullRequests.data.mergeable === true) {
                   console.log("PR is mergeable. We can proceed further.");
                   isMergeable = true
                   break;
