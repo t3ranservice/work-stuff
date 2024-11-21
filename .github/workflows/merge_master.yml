@@ -113,7 +113,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+            const TIMEOUT = 0.8 * 60 * 1000; // 5 minutes in milliseconds
             const INTERVAL = 15 * 1000; // 15 seconds in milliseconds
             const START_TIME = Date.now();
             let isMergeable = false
@@ -135,12 +135,6 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: '${{ steps.open-pr-master.outputs.prNumber }}'
               });
-              console.log(pullRequests);
-              console.log(pullRequests.data.mergeable);
-              console.log(pullRequests.data.mergeable === true);
-              console.log(pullRequests.data.mergeable === 'true');
-              console.log(pullRequests.data.mergeable == true);
-              console.log(pullRequests.data.mergeable == 'true');
               
 
               if (pullRequests.data.mergeable === 'true') {
@@ -162,7 +156,7 @@ jobs:
             }
 
       - name: "Send Slack message about timeout waiting for PR to become mergeable"
-        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'false'
+        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == false
         id: send-failure-message-timeout
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -175,7 +169,7 @@ jobs:
           MSG_MINIMAL: "actions url"
 
       - name: "Send Slack message about failed merge"
-        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == 'true'
+        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == true
         id: send-failure-message
         uses: rtCamp/action-slack-notify@v2
         env:
