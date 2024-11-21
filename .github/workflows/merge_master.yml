@@ -156,17 +156,8 @@ jobs:
             }
 
       - name: "Send Slack message about timeout waiting for PR to become mergeable"
-        if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == false
-        id: send-failure-message-timeout
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: "dteran-test"
-          SLACK_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_MESSAGE: "Workflow failed while waiting for PR to become mergeable, please check the issue"
-          SLACK_COLOR: "failure"
-          SLACK_USERNAME: "borg-sphere"
-          SLACK_ICON: "https://avatars.slack-edge.com/2020-05-22/1133584994822_7ae043ae65db02608c79_512.jpg"
-          MSG_MINIMAL: "actions url"
+        if: failure()
+        run: echo ${{ steps.open-pr-master.outputs.isMergeable }}
 
       - name: "Send Slack message about failed merge"
         if: failure() && steps.merge-pr-master.outcome != 'skipped' && steps.merge-pr-master.outputs.isMergeable == true
